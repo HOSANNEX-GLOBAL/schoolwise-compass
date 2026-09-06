@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlunosRouteImport } from './routes/alunos'
 import { Route as DisciplinasRouteImport } from './routes/disciplinas'
+import { Route as DocumentosRouteImport } from './routes/documentos'
+import { Route as EstatisticasRouteImport } from './routes/estatisticas'
+import { Route as NotasRouteImport } from './routes/notas'
 import { Route as ProfessoresRouteImport } from './routes/professores'
 import { Route as TurmasRouteImport } from './routes/turmas'
 
@@ -30,6 +33,21 @@ const DisciplinasRoute = DisciplinasRouteImport.update({
   path: '/disciplinas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DocumentosRoute = DocumentosRouteImport.update({
+  id: '/documentos',
+  path: '/documentos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstatisticasRoute = EstatisticasRouteImport.update({
+  id: '/estatisticas',
+  path: '/estatisticas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotasRoute = NotasRouteImport.update({
+  id: '/notas',
+  path: '/notas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfessoresRoute = ProfessoresRouteImport.update({
   id: '/professores',
   path: '/professores',
@@ -45,6 +63,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/disciplinas': typeof DisciplinasRoute
+  '/documentos': typeof DocumentosRoute
+  '/estatisticas': typeof EstatisticasRoute
+  '/notas': typeof NotasRoute
   '/professores': typeof ProfessoresRoute
   '/turmas': typeof TurmasRoute
 }
@@ -52,6 +73,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/disciplinas': typeof DisciplinasRoute
+  '/documentos': typeof DocumentosRoute
+  '/estatisticas': typeof EstatisticasRoute
+  '/notas': typeof NotasRoute
   '/professores': typeof ProfessoresRoute
   '/turmas': typeof TurmasRoute
 }
@@ -60,21 +84,52 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
   '/disciplinas': typeof DisciplinasRoute
+  '/documentos': typeof DocumentosRoute
+  '/estatisticas': typeof EstatisticasRoute
+  '/notas': typeof NotasRoute
   '/professores': typeof ProfessoresRoute
   '/turmas': typeof TurmasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/alunos' | '/disciplinas' | '/professores' | '/turmas'
+  fullPaths:
+    | '/'
+    | '/alunos'
+    | '/disciplinas'
+    | '/documentos'
+    | '/estatisticas'
+    | '/notas'
+    | '/professores'
+    | '/turmas'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/alunos' | '/disciplinas' | '/professores' | '/turmas'
-  id: '__root__' | '/' | '/alunos' | '/disciplinas' | '/professores' | '/turmas'
+  to:
+    | '/'
+    | '/alunos'
+    | '/disciplinas'
+    | '/documentos'
+    | '/estatisticas'
+    | '/notas'
+    | '/professores'
+    | '/turmas'
+  id:
+    | '__root__'
+    | '/'
+    | '/alunos'
+    | '/disciplinas'
+    | '/documentos'
+    | '/estatisticas'
+    | '/notas'
+    | '/professores'
+    | '/turmas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlunosRoute: typeof AlunosRoute
   DisciplinasRoute: typeof DisciplinasRoute
+  DocumentosRoute: typeof DocumentosRoute
+  EstatisticasRoute: typeof EstatisticasRoute
+  NotasRoute: typeof NotasRoute
   ProfessoresRoute: typeof ProfessoresRoute
   TurmasRoute: typeof TurmasRoute
 }
@@ -102,6 +157,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DisciplinasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/documentos': {
+      id: '/documentos'
+      path: '/documentos'
+      fullPath: '/documentos'
+      preLoaderRoute: typeof DocumentosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estatisticas': {
+      id: '/estatisticas'
+      path: '/estatisticas'
+      fullPath: '/estatisticas'
+      preLoaderRoute: typeof EstatisticasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notas': {
+      id: '/notas'
+      path: '/notas'
+      fullPath: '/notas'
+      preLoaderRoute: typeof NotasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/professores': {
       id: '/professores'
       path: '/professores'
@@ -123,6 +199,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlunosRoute: AlunosRoute,
   DisciplinasRoute: DisciplinasRoute,
+  DocumentosRoute: DocumentosRoute,
+  EstatisticasRoute: EstatisticasRoute,
+  NotasRoute: NotasRoute,
   ProfessoresRoute: ProfessoresRoute,
   TurmasRoute: TurmasRoute,
 }
