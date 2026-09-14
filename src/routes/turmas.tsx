@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { anoLetivo, fmt, turmas } from "@/lib/school-data";
+import { Turma, TurmaApi } from "@/types/classroom.ds";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api/client";
 
 export const Route = createFileRoute("/turmas")({
   head: () => ({
@@ -18,6 +21,25 @@ export const Route = createFileRoute("/turmas")({
 });
 
 function TurmasPage() {
+
+    const { data: turmas = [], isLoading } = 
+    useQuery<Turma[]>({
+    queryKey: ["classrooms"],
+    queryFn: async () => {
+      const response = await api.get("/classrooms");
+  
+      const turmasData: Turma[] = response.data.map((turma: TurmaApi) => ({
+        nome: turma.name,
+        ciclo: turma.cycle,
+        diretor: turma.teacher.name,
+        alunos: turma.capacity,
+        sala: turma.room,
+        mediaTurma: turma.class_average,
+      }));      
+      return turmasData;
+    },
+  });
+
   return (
     <AppShell>
       <PageHeader
@@ -50,7 +72,7 @@ function TurmasPage() {
               </div>
               <div className="text-right">
                 <p className="text-[11px] text-mut">Média da turma</p>
-                <p className="text-lg font-semibold text-brand">{fmt(t.mediaTurma)}</p>
+                <p className="text-lg font-semibold text-brand">{t.mediaTurma}</p>
               </div>
             </div>
             <div className="h-1.5 rounded-full bg-surface-strong mt-3">
@@ -62,3 +84,5 @@ function TurmasPage() {
     </AppShell>
   );
 }
+
+

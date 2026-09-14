@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { professores } from "@/lib/school-data";
+import { getTeachers } from "@/api/Teacher";
+import { Teacher } from "@/types/teacher.ds";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/professores")({
   head: () => ({
@@ -18,6 +21,14 @@ export const Route = createFileRoute("/professores")({
 });
 
 function ProfessoresPage() {
+
+  const { data: professores = [] } = useQuery<Teacher[]>({
+    queryKey: ["teachers"],
+    queryFn: async () => {
+      return await getTeachers();
+    },
+  });
+
   return (
     <AppShell>
       <PageHeader

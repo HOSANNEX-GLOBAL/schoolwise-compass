@@ -2,7 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { EstadoBadge } from "@/components/EstadoBadge";
-import { alunos, estado, fmt, media, turmas } from "@/lib/school-data";
+import { Aluno, AlunoAPI } from "@/types/student.ds";
+import { estado, turmas } from "@/lib/school-data";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api/client";
+import { Turma, TurmaApi } from "@/types/classroom.ds";
+import { getClassrooms } from "@/api/classrooms";
+import { getStudents } from "@/api/students";
 
 export const Route = createFileRoute("/alunos")({
   head: () => ({
@@ -24,18 +30,33 @@ function AlunosPage() {
   const [turma, setTurma] = useState("Todas");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
 
+  const { data: turmas = [], isLoading } = 
+  useQuery<Turma[]>({
+  queryKey: ["classrooms"],
+  queryFn: async () => {
+    return await getClassrooms();
+  },
+});
+  
+  const { data: alunos = [] } = useQuery<Aluno[]>({
+  queryKey: ["students"],
+  queryFn: async () => {
+    return await getStudents();
+  },
+});
+
   const lista = useMemo(
     () =>
       alunos
-        .map((a) => ({ ...a, m: media(a.notas) }))
+        .map((a) => ({ ...a }))
         .filter((a) => {
           const q = pesquisa.trim().toLowerCase();
           const okQ = !q || a.nome.toLowerCase().includes(q) || a.numero.includes(q);
           const okT = turma === "Todas" || a.turma === turma;
-          const okE = filtroEstado === "Todos" || estado(a.m) === filtroEstado;
+          const okE = filtroEstado === "Todos" || estado(a.media) === filtroEstado;
           return okQ && okT && okE;
         }),
-    [pesquisa, turma, filtroEstado],
+    [alunos,pesquisa, turma, filtroEstado],
   );
 
   return (
@@ -106,9 +127,9 @@ function AlunosPage() {
                     <td className="py-2.5 text-foreground">{a.nome}</td>
                     <td className="py-2.5">{a.turma}</td>
                     <td className="py-2.5">{a.encarregado}</td>
-                    <td className="py-2.5">{fmt(a.m)}</td>
+                    <td className="py-2.5">{(a.media)}</td>
                     <td className="py-2.5 pr-5 text-right">
-                      <EstadoBadge estado={estado(a.m)} />
+                      <EstadoBadge estado={estado(a.media)} />
                     </td>
                   </tr>
                 ))}

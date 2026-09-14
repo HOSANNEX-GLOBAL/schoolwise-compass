@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { disciplinas } from "@/lib/school-data";
+import { Subject, SubjectApi } from "@/types/subject.ds";
+import { api } from "@/api/client";
+import { useQuery } from "@tanstack/react-query";
+import { getSubjects } from "@/api/subjects";
 
 export const Route = createFileRoute("/disciplinas")({
   head: () => ({
@@ -18,6 +22,15 @@ export const Route = createFileRoute("/disciplinas")({
 });
 
 function DisciplinasPage() {
+
+  
+    const { data: disciplinas = [], isLoading } = 
+    useQuery<Subject[]>({
+    queryKey: ["subjects"],
+    queryFn: async () => {
+      return  await getSubjects();}
+  });
+
   return (
     <AppShell>
       <PageHeader

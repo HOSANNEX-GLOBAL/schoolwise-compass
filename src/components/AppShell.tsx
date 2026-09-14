@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import secretaria from "@/assets/secretaria.jpg";
+import guest from "@/assets/gues.jpg";
+
 import { anoLetivo } from "@/lib/school-data";
 
 const academico = [
@@ -113,15 +115,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="glass rounded-lg p-3">
               <div className="flex items-center gap-3">
                 <img
-                  src={secretaria}
-                  alt="Retrato de Teresa M. Cabral, secretária da escola"
+                  src={guest}
+                  alt="Retrato de Carlinho, secretária da escola"
                   loading="lazy"
                   width={512}
                   height={512}
                   className="size-9 rounded-full object-cover"
                 />
                 <div className="leading-tight">
-                  <p className="text-sm font-medium">Teresa M. Cabral</p>
+                  <p className="text-sm font-medium">Carla</p>
                   <p className="text-[11px] text-mut">Secretária</p>
                 </div>
               </div>
