@@ -1,18 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { disciplinas as disciplinasIniciais, type Disciplina } from "@/lib/school-data";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-const DISCIPLINAS_STORAGE_KEY = "schoolwise:disciplinas:v1";
-const disciplinaVazia = { nome: "", cargaHoraria: "", professor: "", aprovacao: "0" };
+import { disciplinas } from "@/lib/school-data";
+import { Subject, SubjectApi } from "@/types/subject.ds";
+import { api } from "@/api/client";
+import { useQuery } from "@tanstack/react-query";
+import { getSubjects } from "@/api/subjects";
 
 export const Route = createFileRoute("/disciplinas")({
   head: () => ({
@@ -76,6 +69,14 @@ function DisciplinasPage() {
     setNovaDisciplina(disciplinaVazia);
     setFormularioAberto(false);
   }
+
+  
+    const { data: disciplinas = [], isLoading } = 
+    useQuery<Subject[]>({
+    queryKey: ["subjects"],
+    queryFn: async () => {
+      return  await getSubjects();}
+  });
 
   return (
     <AppShell>

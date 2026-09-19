@@ -2,53 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { EstadoBadge } from "@/components/EstadoBadge";
-import {
-  alunos as alunosIniciais,
-  anoLetivo,
-  estado,
-  fmt,
-  maxNotaDaTurma,
-  media,
-  normalizarNotas,
-  turmas,
-  type Turma,
-  type Aluno,
-} from "@/lib/school-data";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-
-const ALUNOS_STORAGE_KEY = "schoolwise:alunos:v1";
-const TURMAS_STORAGE_KEY = "schoolwise:turmas:v2";
-
-type NovoAluno = {
-  nome: string;
-  turma: string;
-  encarregado: string;
-  dataNascimento: string;
-  contactoEncarregado: string;
-  estadoMatricula: NonNullable<Aluno["estadoMatricula"]>;
-  t1: string;
-  t2: string;
-  t3: string;
-};
-
-const alunoVazio: NovoAluno = {
-  nome: "",
-  turma: turmas[0]?.nome ?? "",
-  encarregado: "",
-  dataNascimento: "",
-  contactoEncarregado: "",
-  estadoMatricula: "Ativo" as const,
-  t1: "0",
-  t2: "0",
-  t3: "0",
-};
+import { Aluno, AlunoAPI } from "@/types/student.ds";
+import { estado, turmas } from "@/lib/school-data";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/api/client";
+import { Turma, TurmaApi } from "@/types/classroom.ds";
+import { getClassrooms } from "@/api/classrooms";
+import { getStudents } from "@/api/students";
 
 export const Route = createFileRoute("/alunos")({
   head: () => ({
@@ -125,16 +85,29 @@ function AlunosPage() {
     setFormularioAberto(false);
   }
 
+  const { data: turmas = [], isLoading } = useQuery<Turma[]>({
+    queryKey: ["classrooms"],
+    queryFn: async () => {
+      return await getClassrooms();
+    },
+  });
+
+  const { data: alunos = [] } = useQuery<Aluno[]>({
+    queryKey: ["students"],
+    queryFn: async () => {
+      return await getStudents();
+    },
+  });
+
   const lista = useMemo(
     () =>
       alunos
-        .map((a) => ({ ...a, m: media(a.notas) }))
+        .map((a) => ({ ...a }))
         .filter((a) => {
           const q = pesquisa.trim().toLowerCase();
           const okQ = !q || a.nome.toLowerCase().includes(q) || a.numero.includes(q);
           const okT = turma === "Todas" || a.turma === turma;
-          const okE =
-            filtroEstado === "Todos" || estado(a.m, maxNotaDaTurma(a.turma)) === filtroEstado;
+          const okE = filtroEstado === "Todos" || estado(a.media) === filtroEstado;
           return okQ && okT && okE;
         }),
     [alunos, pesquisa, turma, filtroEstado],
@@ -215,11 +188,9 @@ function AlunosPage() {
                     <td className="py-2.5 text-foreground">{a.nome}</td>
                     <td className="py-2.5">{a.turma}</td>
                     <td className="py-2.5">{a.encarregado}</td>
-                    <td className="py-2.5">
-                      {fmt(a.m)} /{maxNotaDaTurma(a.turma)}
-                    </td>
+                    <td className="py-2.5">{a.media}</td>
                     <td className="py-2.5 pr-5 text-right">
-                      <EstadoBadge estado={estado(a.m, maxNotaDaTurma(a.turma))} />
+                      <EstadoBadge estado={estado(a.media)} />
                     </td>
                   </tr>
                 ))}

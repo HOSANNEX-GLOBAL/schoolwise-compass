@@ -1,6 +1,9 @@
 export type Estado = "Aprovado" | "Reprovado" | "Recurso";
 
-export type Aluno = {
+
+export const anoLetivo = "2024/25";
+
+ type Aluno = {
   numero: string;
   nome: string;
   turma: string;
@@ -126,7 +129,26 @@ export const alunos: Aluno[] = [
     encarregado: "Marta dos Santos",
     notas: { t1: 11, t2: 12, t3: 9 },
   },
+  notas: {
+    t1: number;
+    t2: number;
+    t3: number;
+  };
+};
+
+export const alunos: Aluno[] = [
+  { numero: "2024-0187", nome: "António F. Neto", turma: "10.º A", encarregado: "Fernando Neto", notas: { t1: 15, t2: 17, t3: 14 } },
+  { numero: "2024-0192", nome: "Carla M. Vieira", turma: "10.º B", encarregado: "Manuela Vieira", notas: { t1: 9, t2: 11, t3: 10 } },
+  { numero: "2024-0203", nome: "Domingos A. Neto", turma: "10.º A", encarregado: "Aida Neto", notas: { t1: 7, t2: 8, t3: 6 } },
+  { numero: "2024-0211", nome: "Beatriz L. Sousa", turma: "11.º C", encarregado: "Luís Sousa", notas: { t1: 18, t2: 19, t3: 16 } },
+  { numero: "2024-0219", nome: "Elsa P. Cardoso", turma: "11.º C", encarregado: "Paula Cardoso", notas: { t1: 14, t2: 13, t3: 15 } },
+  { numero: "2024-0224", nome: "Joaquim K. Bento", turma: "12.º A", encarregado: "Kiala Bento", notas: { t1: 12, t2: 10, t3:13 } },
+  { numero: "2024-0231", nome: "Lúcia N. Fernandes", turma: "12.º A", encarregado: "Nelson Fernandes", notas: { t1: 16, t2: 15, t3: 17 } },
+  { numero: "2024-0240", nome: "Miguel S. Baptista", turma: "10.º B", encarregado: "Sara Baptista", notas: { t1: 8, t2: 9, t3: 11 } },
+  { numero: "2024-0246", nome: "Isabel R. Kiala", turma: "11.º B", encarregado: "Rosa Kiala", notas: { t1: 13, t2: 14, t3: 12 } },
+  { numero: "2024-0252", nome: "Pedro M. dos Santos", turma: "11.º B", encarregado: "Marta dos Santos", notas: { t1: 11, t2: 12, t3: 9 } },
 ];
+
 
 export function media(n: { t1: number; t2: number; t3: number }): number {
   return Math.round(((n.t1 + n.t2 + n.t3) / 3) * 10) / 10;
@@ -226,7 +248,7 @@ export const turmas: Turma[] = [
   },
 ];
 
-export type Disciplina = {
+ type Disciplina = {
   nome: string;
   codigo: string;
   cargaHoraria: number;
