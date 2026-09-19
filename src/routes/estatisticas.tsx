@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { alunos, disciplinas, estado, fmt, media, turmas } from "@/lib/school-data";
+import { alunos, disciplinas, estado, fmt, maxNotaDaTurma, media, turmas } from "@/lib/school-data";
 
 export const Route = createFileRoute("/estatisticas")({
   head: () => ({
@@ -12,7 +12,10 @@ export const Route = createFileRoute("/estatisticas")({
           "Relatórios de aprovação e reprovação, desempenho por turma e por disciplina ao longo do ano letivo.",
       },
       { property: "og:title", content: "Estatísticas Académicas — Gestão Académica" },
-      { property: "og:description", content: "Indicadores de aproveitamento escolar e relatórios." },
+      {
+        property: "og:description",
+        content: "Indicadores de aproveitamento escolar e relatórios.",
+      },
     ],
   }),
   component: EstatisticasPage,
@@ -20,9 +23,15 @@ export const Route = createFileRoute("/estatisticas")({
 
 function EstatisticasPage() {
   const medias = alunos.map((a) => media(a.notas));
-  const aprovados = medias.filter((m) => estado(m) === "Aprovado").length;
-  const recursos = medias.filter((m) => estado(m) === "Recurso").length;
-  const reprovados = medias.filter((m) => estado(m) === "Reprovado").length;
+  const aprovados = alunos.filter(
+    (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Aprovado",
+  ).length;
+  const recursos = alunos.filter(
+    (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Recurso",
+  ).length;
+  const reprovados = alunos.filter(
+    (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Reprovado",
+  ).length;
   const total = medias.length;
   const pct = (n: number) => Math.round((n / total) * 100);
 
@@ -42,7 +51,9 @@ function EstatisticasPage() {
         <div className="glass clip p-5">
           <p className="text-[11px] uppercase tracking-[0.15em] text-mut">Aprovados</p>
           <p className="text-3xl font-semibold mt-2 leading-none text-pass">{pct(aprovados)}%</p>
-          <p className="text-[11px] text-mut mt-2">{aprovados} de {total} alunos avaliados</p>
+          <p className="text-[11px] text-mut mt-2">
+            {aprovados} de {total} alunos avaliados
+          </p>
         </div>
         <div className="glass clip p-5">
           <p className="text-[11px] uppercase tracking-[0.15em] text-mut">Em recurso</p>
@@ -64,12 +75,14 @@ function EstatisticasPage() {
               <div key={t.nome}>
                 <div className="flex justify-between text-xs mb-1">
                   <span>{t.nome}</span>
-                  <span className="text-mut">{fmt(t.mediaTurma)} /20</span>
+                  <span className="text-mut">
+                    {fmt(t.mediaTurma)} /{maxNotaDaTurma(t.nome)}
+                  </span>
                 </div>
                 <div className="h-2 rounded-full bg-surface-strong">
                   <div
                     className={`h-full rounded-full ${t.mediaTurma >= 12 ? "bg-brand" : "bg-warn"}`}
-                    style={{ width: `${(t.mediaTurma / 20) * 100}%` }}
+                    style={{ width: `${(t.mediaTurma / maxNotaDaTurma(t.nome)) * 100}%` }}
                   />
                 </div>
               </div>
@@ -117,14 +130,17 @@ function EstatisticasPage() {
               </thead>
               <tbody className="text-mut">
                 {alunos.map((a) => (
-                  <tr key={a.numero} className="border-b border-line/60 last:border-0 hover:bg-surface">
+                  <tr
+                    key={a.numero}
+                    className="border-b border-line/60 last:border-0 hover:bg-surface"
+                  >
                     <td className="py-2.5 px-5 text-foreground">{a.nome}</td>
                     <td className="py-2.5">{a.turma}</td>
                     <td className="py-2.5 text-center">{a.notas.t1}</td>
                     <td className="py-2.5 text-center">{a.notas.t2}</td>
                     <td className="py-2.5 text-center">{a.notas.t3}</td>
                     <td className="py-2.5 pr-5 text-right font-medium text-foreground">
-                      {fmt(media(a.notas))}
+                      {fmt(media(a.notas))} /{maxNotaDaTurma(a.turma)}
                     </td>
                   </tr>
                 ))}

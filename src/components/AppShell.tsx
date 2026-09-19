@@ -1,20 +1,8 @@
-import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import secretaria from "@/assets/secretaria.jpg";
+import { clearSession, getVisibleRoutes, readSession } from "@/lib/auth";
 import { anoLetivo } from "@/lib/school-data";
-
-const academico = [
-  { to: "/alunos", label: "Alunos" },
-  { to: "/turmas", label: "Turmas" },
-  { to: "/disciplinas", label: "Disciplinas" },
-  { to: "/professores", label: "Professores" },
-] as const;
-
-const processos = [
-  { to: "/notas", label: "Notas" },
-  { to: "/documentos", label: "Documentos" },
-  { to: "/estatisticas", label: "Estatísticas" },
-] as const;
 
 function NavItem({ to, label }: { to: string; label: string }) {
   return (
@@ -69,20 +57,40 @@ export function PageHeader({
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
+  const [sessao, setSessao] = useState(readSession());
+
+  useEffect(() => {
+    setSessao(readSession());
+  }, []);
+
+  const itens = useMemo(() => (sessao ? getVisibleRoutes(sessao.cargo) : []), [sessao]);
+
+  function sair() {
+    clearSession();
+    navigate({ to: "/login" });
+  }
+
   return (
     <div className="min-h-screen bg-ink">
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div
-          className="absolute -top-40 -left-40 w-[720px] h-[720px] drift rounded-full"
-          style={{ background: "radial-gradient(circle, oklch(0.572 0.129 271 / 35%), transparent 60%)" }}
+          className="absolute -top-40 -left-40 w-180 h-180 drift rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.572 0.129 271 / 35%), transparent 60%)",
+          }}
         />
         <div
-          className="absolute top-1/3 right-[-200px] w-[640px] h-[640px] drift2 rounded-full"
-          style={{ background: "radial-gradient(circle, oklch(0.53 0.086 194 / 32%), transparent 60%)" }}
+          className="absolute top-1/3 -right-50 w-160 h-160 drift2 rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.53 0.086 194 / 32%), transparent 60%)",
+          }}
         />
         <div
-          className="absolute bottom-[-220px] left-1/3 w-[560px] h-[560px] drift rounded-full"
-          style={{ background: "radial-gradient(circle, oklch(0.781 0.155 68 / 14%), transparent 60%)" }}
+          className="absolute -bottom-55 left-1/3 w-140 h-140 drift rounded-full"
+          style={{
+            background: "radial-gradient(circle, oklch(0.781 0.155 68 / 14%), transparent 60%)",
+          }}
         />
       </div>
 
@@ -99,13 +107,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Link>
 
           <nav className="px-3">
-            <p className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-[0.18em] text-mut/80">Académico</p>
-            {academico.map((i) => (
-              <NavItem key={i.to} to={i.to} label={i.label} />
-            ))}
-            <p className="px-3 pt-4 pb-1 text-[10px] uppercase tracking-[0.18em] text-mut/80">Processos</p>
-            {processos.map((i) => (
-              <NavItem key={i.to} to={i.to} label={i.label} />
+            {itens.map((item) => (
+              <NavItem key={item.to} to={item.to} label={item.label} />
             ))}
           </nav>
 
@@ -120,11 +123,18 @@ export function AppShell({ children }: { children: ReactNode }) {
                   height={512}
                   className="size-9 rounded-full object-cover"
                 />
-                <div className="leading-tight">
-                  <p className="text-sm font-medium">Teresa M. Cabral</p>
-                  <p className="text-[11px] text-mut">Secretária</p>
+                <div className="leading-tight flex-1">
+                  <p className="text-sm font-medium">{sessao?.nome ?? "Utilizador"}</p>
+                  <p className="text-[11px] text-mut">{sessao?.cargo ?? "Acesso"}</p>
                 </div>
               </div>
+              <button
+                type="button"
+                onClick={sair}
+                className="mt-3 w-full rounded-md border border-line bg-surface px-2 py-1.5 text-[11px] text-mut hover:text-foreground"
+              >
+                Sair
+              </button>
             </div>
           </div>
         </aside>

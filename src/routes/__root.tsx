@@ -3,16 +3,19 @@ import {
   Outlet,
   Link,
   createRootRouteWithContext,
+  useLocation,
+  useNavigate,
   useRouter,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import { Toaster } from "@/components/ui/sonner";
 import appCss from "../styles.css?url";
+import { canAccessPath, readSession } from "@/lib/auth";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-
 
 function NotFoundComponent() {
   return (
@@ -111,7 +114,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="pt">
       <head>
         <HeadContent />
       </head>
@@ -125,6 +128,29 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const currentUser = readSession();
+
+  useEffect(() => {
+    const publicRoutes = ["/", "/login", "/cadastro"];
+
+    if (publicRoutes.includes(location.pathname)) {
+      return;
+    }
+
+    if (!currentUser) {
+      navigate({ to: "/login" });
+      return;
+    }
+
+    if (!canAccessPath(currentUser.cargo, location.pathname)) {
+      toast.error("Acesso não autorizado", {
+        description: "Este perfil não pode aceder a esta página.",
+      });
+      navigate({ to: "/" });
+    }
+  }, [currentUser, location.pathname, navigate]);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -134,4 +160,3 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
-

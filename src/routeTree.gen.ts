@@ -11,12 +11,18 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AlunosRouteImport } from './routes/alunos'
+import { Route as CadastroRouteImport } from './routes/cadastro'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as DisciplinasRouteImport } from './routes/disciplinas'
 import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as EstatisticasRouteImport } from './routes/estatisticas'
+import { Route as InscricaoRouteImport } from './routes/inscricao'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as MatriculaRouteImport } from './routes/matricula'
 import { Route as NotasRouteImport } from './routes/notas'
 import { Route as ProfessoresRouteImport } from './routes/professores'
 import { Route as TurmasRouteImport } from './routes/turmas'
+import { Route as UsuariosRouteImport } from './routes/usuarios'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -26,6 +32,16 @@ const IndexRoute = IndexRouteImport.update({
 const AlunosRoute = AlunosRouteImport.update({
   id: '/alunos',
   path: '/alunos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DisciplinasRoute = DisciplinasRouteImport.update({
@@ -43,6 +59,21 @@ const EstatisticasRoute = EstatisticasRouteImport.update({
   path: '/estatisticas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InscricaoRoute = InscricaoRouteImport.update({
+  id: '/inscricao',
+  path: '/inscricao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatriculaRoute = MatriculaRouteImport.update({
+  id: '/matricula',
+  path: '/matricula',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotasRoute = NotasRouteImport.update({
   id: '/notas',
   path: '/notas',
@@ -58,80 +89,127 @@ const TurmasRoute = TurmasRouteImport.update({
   path: '/turmas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UsuariosRoute = UsuariosRouteImport.update({
+  id: '/usuarios',
+  path: '/usuarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
+  '/cadastro': typeof CadastroRoute
+  '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/documentos': typeof DocumentosRoute
   '/estatisticas': typeof EstatisticasRoute
+  '/inscricao': typeof InscricaoRoute
+  '/login': typeof LoginRoute
+  '/matricula': typeof MatriculaRoute
   '/notas': typeof NotasRoute
   '/professores': typeof ProfessoresRoute
   '/turmas': typeof TurmasRoute
+  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
+  '/cadastro': typeof CadastroRoute
+  '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/documentos': typeof DocumentosRoute
   '/estatisticas': typeof EstatisticasRoute
+  '/inscricao': typeof InscricaoRoute
+  '/login': typeof LoginRoute
+  '/matricula': typeof MatriculaRoute
   '/notas': typeof NotasRoute
   '/professores': typeof ProfessoresRoute
   '/turmas': typeof TurmasRoute
+  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/alunos': typeof AlunosRoute
+  '/cadastro': typeof CadastroRoute
+  '/dashboard': typeof DashboardRoute
   '/disciplinas': typeof DisciplinasRoute
   '/documentos': typeof DocumentosRoute
   '/estatisticas': typeof EstatisticasRoute
+  '/inscricao': typeof InscricaoRoute
+  '/login': typeof LoginRoute
+  '/matricula': typeof MatriculaRoute
   '/notas': typeof NotasRoute
   '/professores': typeof ProfessoresRoute
   '/turmas': typeof TurmasRoute
+  '/usuarios': typeof UsuariosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/alunos'
+    | '/cadastro'
+    | '/dashboard'
     | '/disciplinas'
     | '/documentos'
     | '/estatisticas'
+    | '/inscricao'
+    | '/login'
+    | '/matricula'
     | '/notas'
     | '/professores'
     | '/turmas'
+    | '/usuarios'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/alunos'
+    | '/cadastro'
+    | '/dashboard'
     | '/disciplinas'
     | '/documentos'
     | '/estatisticas'
+    | '/inscricao'
+    | '/login'
+    | '/matricula'
     | '/notas'
     | '/professores'
     | '/turmas'
+    | '/usuarios'
   id:
     | '__root__'
     | '/'
     | '/alunos'
+    | '/cadastro'
+    | '/dashboard'
     | '/disciplinas'
     | '/documentos'
     | '/estatisticas'
+    | '/inscricao'
+    | '/login'
+    | '/matricula'
     | '/notas'
     | '/professores'
     | '/turmas'
+    | '/usuarios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AlunosRoute: typeof AlunosRoute
+  CadastroRoute: typeof CadastroRoute
+  DashboardRoute: typeof DashboardRoute
   DisciplinasRoute: typeof DisciplinasRoute
   DocumentosRoute: typeof DocumentosRoute
   EstatisticasRoute: typeof EstatisticasRoute
+  InscricaoRoute: typeof InscricaoRoute
+  LoginRoute: typeof LoginRoute
+  MatriculaRoute: typeof MatriculaRoute
   NotasRoute: typeof NotasRoute
   ProfessoresRoute: typeof ProfessoresRoute
   TurmasRoute: typeof TurmasRoute
+  UsuariosRoute: typeof UsuariosRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -148,6 +226,20 @@ declare module '@tanstack/react-router' {
       path: '/alunos'
       fullPath: '/alunos'
       preLoaderRoute: typeof AlunosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/disciplinas': {
@@ -171,6 +263,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EstatisticasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inscricao': {
+      id: '/inscricao'
+      path: '/inscricao'
+      fullPath: '/inscricao'
+      preLoaderRoute: typeof InscricaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matricula': {
+      id: '/matricula'
+      path: '/matricula'
+      fullPath: '/matricula'
+      preLoaderRoute: typeof MatriculaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notas': {
       id: '/notas'
       path: '/notas'
@@ -192,18 +305,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TurmasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/usuarios': {
+      id: '/usuarios'
+      path: '/usuarios'
+      fullPath: '/usuarios'
+      preLoaderRoute: typeof UsuariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AlunosRoute: AlunosRoute,
+  CadastroRoute: CadastroRoute,
+  DashboardRoute: DashboardRoute,
   DisciplinasRoute: DisciplinasRoute,
   DocumentosRoute: DocumentosRoute,
   EstatisticasRoute: EstatisticasRoute,
+  InscricaoRoute: InscricaoRoute,
+  LoginRoute: LoginRoute,
+  MatriculaRoute: MatriculaRoute,
   NotasRoute: NotasRoute,
   ProfessoresRoute: ProfessoresRoute,
   TurmasRoute: TurmasRoute,
+  UsuariosRoute: UsuariosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

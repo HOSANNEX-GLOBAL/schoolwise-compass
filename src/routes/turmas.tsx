@@ -1,6 +1,42 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { anoLetivo, fmt, turmas } from "@/lib/school-data";
+import {
+  anoLetivo,
+  classesEnsinoGeral,
+  cicloDaClasse,
+  fmt,
+  maxNotaDaTurma,
+  normalizarNota,
+  turmas as turmasIniciais,
+  type Turma,
+} from "@/lib/school-data";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+const TURMAS_STORAGE_KEY = "schoolwise:turmas:v2";
+
+const turmaVazia: {
+  classe: (typeof classesEnsinoGeral)[number];
+  letra: string;
+  diretor: string;
+  alunos: string;
+  sala: string;
+  mediaTurma: string;
+} = {
+  classe: classesEnsinoGeral[0],
+  letra: "A",
+  diretor: "",
+  alunos: "0",
+  sala: "",
+  mediaTurma: "0",
+};
 
 export const Route = createFileRoute("/turmas")({
   head: () => ({
@@ -18,13 +54,57 @@ export const Route = createFileRoute("/turmas")({
 });
 
 function TurmasPage() {
+  const [turmas, setTurmas] = useState<Turma[]>(turmasIniciais);
+  const [formularioAberto, setFormularioAberto] = useState(false);
+  const [novaTurma, setNovaTurma] = useState(turmaVazia);
+
+  useEffect(() => {
+    const dadosGuardados = window.localStorage.getItem(TURMAS_STORAGE_KEY);
+
+    if (dadosGuardados) {
+      const guardadas = JSON.parse(dadosGuardados) as Turma[];
+      setTurmas(
+        guardadas.map((turma) => ({
+          ...turma,
+          mediaTurma: normalizarNota(turma.mediaTurma, turma.nome),
+        })),
+      );
+    }
+  }, []);
+
+  function atualizarTurmas(novasTurmas: Turma[]) {
+    setTurmas(novasTurmas);
+    window.localStorage.setItem(TURMAS_STORAGE_KEY, JSON.stringify(novasTurmas));
+  }
+
+  function adicionarTurma(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const turma: Turma = {
+      nome: `${novaTurma.classe} ${novaTurma.letra}`,
+      ciclo: cicloDaClasse(novaTurma.classe),
+      diretor: novaTurma.diretor.trim(),
+      alunos: Number(novaTurma.alunos),
+      sala: novaTurma.sala.trim(),
+      mediaTurma: Number(novaTurma.mediaTurma),
+    };
+
+    atualizarTurmas([...turmas, turma]);
+    setNovaTurma(turmaVazia);
+    setFormularioAberto(false);
+  }
+
   return (
     <AppShell>
       <PageHeader
         eyebrow="Gestão académica"
         title={`Turmas · Ano letivo ${anoLetivo}`}
         action={
-          <button className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40">
+          <button
+            type="button"
+            onClick={() => setFormularioAberto(true)}
+            className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
+          >
             + Nova turma
           </button>
         }
@@ -54,11 +134,150 @@ function TurmasPage() {
               </div>
             </div>
             <div className="h-1.5 rounded-full bg-surface-strong mt-3">
-              <div className="h-full rounded-full bg-brand" style={{ width: `${(t.mediaTurma / 20) * 100}%` }} />
+              <div
+                className="h-full rounded-full bg-brand"
+                style={{ width: `${(t.mediaTurma / maxNotaDaTurma(t.nome)) * 100}%` }}
+              />
             </div>
           </article>
         ))}
       </section>
+
+      <Dialog open={formularioAberto} onOpenChange={setFormularioAberto}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Nova turma</DialogTitle>
+            <DialogDescription>
+              Preencha os dados da turma para a guardar no sistema.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={adicionarTurma} className="grid gap-4">
+            <div className="grid gap-2">
+              <label htmlFor="nome-turma" className="text-sm font-medium">
+                Classe
+              </label>
+              <select
+                id="nome-turma"
+                required
+                value={novaTurma.classe}
+                onChange={(event) =>
+                  setNovaTurma({
+                    ...novaTurma,
+                    classe: event.target.value as (typeof classesEnsinoGeral)[number],
+                  })
+                }
+                className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
+              >
+                {classesEnsinoGeral.map((classe) => (
+                  <option key={classe} value={classe}>
+                    {classe}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="letra-turma" className="text-sm font-medium">
+                  Turma
+                </label>
+                <input
+                  id="letra-turma"
+                  required
+                  value={novaTurma.letra}
+                  onChange={(event) =>
+                    setNovaTurma({
+                      ...novaTurma,
+                      letra: event.target.value.toUpperCase(),
+                    })
+                  }
+                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
+                  placeholder="Ex.: A"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="sala-turma" className="text-sm font-medium">
+                  Sala
+                </label>
+                <input
+                  id="sala-turma"
+                  required
+                  value={novaTurma.sala}
+                  onChange={(event) => setNovaTurma({ ...novaTurma, sala: event.target.value })}
+                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
+                  placeholder="Ex.: B-12"
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <label htmlFor="diretor-turma" className="text-sm font-medium">
+                Diretor(a)
+              </label>
+              <input
+                id="diretor-turma"
+                required
+                value={novaTurma.diretor}
+                onChange={(event) => setNovaTurma({ ...novaTurma, diretor: event.target.value })}
+                className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
+                placeholder="Ex.: Prof. Almeida Cunha"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="alunos-turma" className="text-sm font-medium">
+                  N.º de alunos
+                </label>
+                <input
+                  id="alunos-turma"
+                  type="number"
+                  min="0"
+                  required
+                  value={novaTurma.alunos}
+                  onChange={(event) => setNovaTurma({ ...novaTurma, alunos: event.target.value })}
+                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
+                />
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="media-turma" className="text-sm font-medium">
+                  Média da turma
+                </label>
+                <input
+                  id="media-turma"
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="0.1"
+                  required
+                  value={novaTurma.mediaTurma}
+                  onChange={(event) =>
+                    setNovaTurma({ ...novaTurma, mediaTurma: event.target.value })
+                  }
+                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => setFormularioAberto(false)}
+                className="text-sm px-3 py-2 rounded-md ring-1 ring-white/10"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="bg-accent text-accent-foreground text-sm font-semibold px-3 py-2 rounded-md"
+              >
+                Adicionar turma
+              </button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
