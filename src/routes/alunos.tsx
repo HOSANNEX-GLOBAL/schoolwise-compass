@@ -3,12 +3,12 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { EstadoBadge } from "@/components/EstadoBadge";
 import { Aluno, AlunoAPI } from "@/types/student.ds";
-import { estado, turmas } from "@/lib/school-data";
+import { anoLetivo, estado, maxNotaDaTurma, turmas } from "@/lib/school-data";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "@/api/client";
 import { Turma, TurmaApi } from "@/types/classroom.ds";
 import { getClassrooms } from "@/api/classrooms";
 import { getStudents } from "@/api/students";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/alunos")({
   head: () => ({
@@ -26,34 +26,14 @@ export const Route = createFileRoute("/alunos")({
 });
 
 function AlunosPage() {
-  const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais);
-  const [turmasAtuais, setTurmasAtuais] = useState<Turma[]>(turmas);
+  // const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais);
+  // const [turmasAtuais, setTurmasAtuais] = useState<Turma[]>(turmas);
   const [pesquisa, setPesquisa] = useState("");
   const [turma, setTurma] = useState("Todas");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
   const [formularioAberto, setFormularioAberto] = useState(false);
-  const [novoAluno, setNovoAluno] = useState(alunoVazio);
+  const [novoAluno, setNovoAluno] = useState({} as any);
 
-  useEffect(() => {
-    const dadosGuardados = window.localStorage.getItem(ALUNOS_STORAGE_KEY);
-
-    if (dadosGuardados) {
-      const guardados = JSON.parse(dadosGuardados) as Aluno[];
-      setAlunos(
-        guardados.map((aluno) => ({ ...aluno, notas: normalizarNotas(aluno.notas, aluno.turma) })),
-      );
-    }
-  }, []);
-
-  useEffect(() => {
-    const guardadas = window.localStorage.getItem(TURMAS_STORAGE_KEY);
-    if (guardadas) setTurmasAtuais(JSON.parse(guardadas) as Turma[]);
-  }, []);
-
-  function atualizarAlunos(novosAlunos: Aluno[]) {
-    setAlunos(novosAlunos);
-    window.localStorage.setItem(ALUNOS_STORAGE_KEY, JSON.stringify(novosAlunos));
-  }
 
   function adicionarAluno(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -65,7 +45,7 @@ function AlunosPage() {
       return Math.max(maior, Number(sequencial) || 0);
     }, 0);
 
-    const aluno: Aluno = {
+    const aluno: any = {
       numero: `${ano}-${String(maiorSequencial + 1).padStart(4, "0")}`,
       nome: novoAluno.nome.trim(),
       turma: novoAluno.turma,
@@ -80,8 +60,8 @@ function AlunosPage() {
       },
     };
 
-    atualizarAlunos([...alunos, aluno]);
-    setNovoAluno(alunoVazio);
+    // atualizarAlunos([...alunos, aluno]);
+    // setNovoAluno(alunoVazio);
     setFormularioAberto(false);
   }
 
@@ -144,7 +124,7 @@ function AlunosPage() {
               className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-2 text-sm focus:outline-none"
             >
               <option className="bg-ink2">Todas</option>
-              {turmasAtuais.map((t) => (
+              {turmas.map((t) => (
                 <option key={t.nome} className="bg-ink2">
                   {t.nome}
                 </option>
@@ -229,7 +209,7 @@ function AlunosPage() {
                   onChange={(event) => setNovoAluno({ ...novoAluno, turma: event.target.value })}
                   className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
                 >
-                  {turmasAtuais.map((item) => (
+                  {turmas.map((item) => (
                     <option key={item.nome} value={item.nome}>
                       {item.nome}
                     </option>
@@ -277,7 +257,7 @@ function AlunosPage() {
                   onChange={(event) =>
                     setNovoAluno({
                       ...novoAluno,
-                      estadoMatricula: event.target.value as Aluno["estadoMatricula"],
+                      // estadoMatricula: event.target.value as Aluno["estadoMatricula"],
                     })
                   }
                   className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
@@ -331,7 +311,7 @@ function AlunosPage() {
                     <input
                       type="number"
                       min="0"
-                      max={maxNotaDaTurma(novoAluno.turma)}
+                      // max={maxNotaDaTurma(novoAluno.turma)}
                       step="0.1"
                       required
                       value={novoAluno[trimestre as "t1" | "t2" | "t3"]}

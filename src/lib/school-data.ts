@@ -1,8 +1,5 @@
 export type Estado = "Aprovado" | "Reprovado" | "Recurso";
 
-
-export const anoLetivo = "2024/25";
-
  type Aluno = {
   numero: string;
   nome: string;
@@ -58,83 +55,6 @@ export function cicloDaClasse(classe: string): string {
   return "I ciclo do ensino secundário";
 }
 
-export const alunos: Aluno[] = [
-  {
-    numero: "2026-0187",
-    nome: "António F. Neto",
-    turma: "1.ª classe A",
-    encarregado: "Fernando Neto",
-    notas: { t1: 8, t2: 9, t3: 7 },
-  },
-  {
-    numero: "2026-0192",
-    nome: "Carla M. Vieira",
-    turma: "2.ª classe A",
-    encarregado: "Manuela Vieira",
-    notas: { t1: 5, t2: 6, t3: 5 },
-  },
-  {
-    numero: "2026-0203",
-    nome: "Domingos A. Neto",
-    turma: "3.ª classe A",
-    encarregado: "Aida Neto",
-    notas: { t1: 4, t2: 5, t3: 3 },
-  },
-  {
-    numero: "2026-0211",
-    nome: "Beatriz L. Sousa",
-    turma: "4.ª classe A",
-    encarregado: "Luís Sousa",
-    notas: { t1: 9, t2: 10, t3: 8 },
-  },
-  {
-    numero: "2026-0219",
-    nome: "Elsa P. Cardoso",
-    turma: "5.ª classe A",
-    encarregado: "Paula Cardoso",
-    notas: { t1: 7, t2: 6, t3: 8 },
-  },
-  {
-    numero: "2026-0224",
-    nome: "Joaquim K. Bento",
-    turma: "6.ª classe A",
-    encarregado: "Kiala Bento",
-    notas: { t1: 12, t2: 10, t3: 13 },
-  },
-  {
-    numero: "2026-0231",
-    nome: "Lúcia N. Fernandes",
-    turma: "7.ª classe A",
-    encarregado: "Nelson Fernandes",
-    notas: { t1: 16, t2: 15, t3: 17 },
-  },
-  {
-    numero: "2026-0240",
-    nome: "Miguel S. Baptista",
-    turma: "8.ª classe A",
-    encarregado: "Sara Baptista",
-    notas: { t1: 8, t2: 9, t3: 11 },
-  },
-  {
-    numero: "2026-0246",
-    nome: "Isabel R. Kiala",
-    turma: "9.ª classe A",
-    encarregado: "Rosa Kiala",
-    notas: { t1: 13, t2: 14, t3: 12 },
-  },
-  {
-    numero: "2026-0252",
-    nome: "Pedro M. dos Santos",
-    turma: "9.ª classe B",
-    encarregado: "Marta dos Santos",
-    notas: { t1: 11, t2: 12, t3: 9 },
-  },
-  notas: {
-    t1: number;
-    t2: number;
-    t3: number;
-  };
-};
 
 export const alunos: Aluno[] = [
   { numero: "2024-0187", nome: "António F. Neto", turma: "10.º A", encarregado: "Fernando Neto", notas: { t1: 15, t2: 17, t3: 14 } },

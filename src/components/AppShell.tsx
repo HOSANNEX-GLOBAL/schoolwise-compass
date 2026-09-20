@@ -4,6 +4,7 @@ import secretaria from "@/assets/secretaria.jpg";
 import guest from "@/assets/gues.jpg";
 
 import { anoLetivo } from "@/lib/school-data";
+import { clearSession, getVisibleRoutes, readSession } from "@/lib/auth";
 
 function NavItem({ to, label }: { to: string; label: string }) {
   return (

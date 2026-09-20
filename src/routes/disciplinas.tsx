@@ -6,6 +6,8 @@ import { Subject, SubjectApi } from "@/types/subject.ds";
 import { api } from "@/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { getSubjects } from "@/api/subjects";
+import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { DialogContent } from "@radix-ui/react-dialog";
 
 export const Route = createFileRoute("/disciplinas")({
   head: () => ({
@@ -23,21 +25,20 @@ export const Route = createFileRoute("/disciplinas")({
 });
 
 function DisciplinasPage() {
-  const [disciplinas, setDisciplinas] = useState<Disciplina[]>(disciplinasIniciais);
   const [formularioAberto, setFormularioAberto] = useState(false);
-  const [novaDisciplina, setNovaDisciplina] = useState(disciplinaVazia);
+  const [novaDisciplina, setNovaDisciplina] = useState({} as any);
 
   useEffect(() => {
-    const guardadas = window.localStorage.getItem(DISCIPLINAS_STORAGE_KEY);
-    if (guardadas) setDisciplinas(JSON.parse(guardadas) as Disciplina[]);
+    // const guardadas = window.localStorage.getItem(DISCIPLINAS_STORAGE_KEY);
+    // if (guardadas) setDisciplinas(JSON.parse(guardadas) as Disciplina[]);
   }, []);
 
   function adicionarDisciplina(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const nome = novaDisciplina.nome.trim();
+    const nome = novaDisciplina?.nome;
     const iniciais = nome
       .split(/\s+/)
-      .map((palavra) => palavra.replace(/[^A-Za-zÀ-ÿ]/g, "").charAt(0))
+      .map((palavra: string) => palavra.replace(/[^A-Za-zÀ-ÿ]/g, "").charAt(0))
       .filter(Boolean)
       .join("")
       .toUpperCase();
@@ -59,14 +60,14 @@ function DisciplinasPage() {
       {
         nome,
         codigo,
-        cargaHoraria: Number(novaDisciplina.cargaHoraria),
-        professor: novaDisciplina.professor.trim(),
-        aprovacao: Number(novaDisciplina.aprovacao),
+        cargaHoraria: Number(novaDisciplina?.cargaHoraria),
+        professor: novaDisciplina?.professor.trim(),
+        aprovacao: Number(novaDisciplina?.aprovacao),
       },
     ];
-    setDisciplinas(lista);
-    window.localStorage.setItem(DISCIPLINAS_STORAGE_KEY, JSON.stringify(lista));
-    setNovaDisciplina(disciplinaVazia);
+    // setDisciplinas(lista);
+    // window.localStorage.setItem(DISCIPLINAS_STORAGE_KEY, JSON.stringify(lista));
+    // setNovaDisciplina(disciplinaVazia);
     setFormularioAberto(false);
   }
 
@@ -142,7 +143,7 @@ function DisciplinasPage() {
             <DialogTitle>Nova disciplina</DialogTitle>
             <DialogDescription>Adicione uma disciplina ao plano curricular.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={adicionarDisciplina} className="grid gap-4">
+          <form onSubmit={adicionarDisciplina} className="grid gap-4 max-h-[75vh] overflow-y-auto pr-1">
             {(
               [
                 ["nome", "Nome", "text"],
@@ -158,7 +159,7 @@ function DisciplinasPage() {
                   type={tipo}
                   min={campo === "cargaHoraria" ? 1 : campo === "aprovacao" ? 0 : undefined}
                   max={campo === "aprovacao" ? 100 : undefined}
-                  value={novaDisciplina[campo]}
+                  value={""}
                   onChange={(event) =>
                     setNovaDisciplina({ ...novaDisciplina, [campo]: event.target.value })
                   }

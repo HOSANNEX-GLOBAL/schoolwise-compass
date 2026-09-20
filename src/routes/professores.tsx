@@ -36,6 +36,7 @@ const professorVazio: NovoProfessor = {
   senha: "",
   situacao: "Efetivo" as const,
 };
+
 import { professores } from "@/lib/school-data";
 import { getTeachers } from "@/api/Teacher";
 import { Teacher } from "@/types/teacher.ds";
@@ -60,15 +61,14 @@ export const Route = createFileRoute("/professores")({
 });
 
 function ProfessoresPage() {
-<<<<<<< HEAD
-  const [professores, setProfessores] = useState<Professor[]>(professoresIniciais);
+  // const [professores, setProfessores] = useState<Professor[]>(professoresIniciais);
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [novoProfessor, setNovoProfessor] = useState(professorVazio);
   const [utilizadores, setUtilizadores] = useState<SessionUser[]>([]);
 
   useEffect(() => {
     const guardados = window.localStorage.getItem(PROFESSORES_STORAGE_KEY);
-    if (guardados) setProfessores(JSON.parse(guardados) as Professor[]);
+    // if (guardados) setProfessores(JSON.parse(guardados) as Professor[]);
     setUtilizadores(readUsers());
   }, []);
 
@@ -105,9 +105,9 @@ function ProfessoresPage() {
     };
     const utilizadoresAtualizados = [...utilizadores, contaProfessor];
 
-    setProfessores(lista);
+    // setProfessores(lista);
     setUtilizadores(utilizadoresAtualizados);
-    window.localStorage.setItem(PROFESSORES_STORAGE_KEY, JSON.stringify(lista));
+    // window.localStorage.setItem(PROFESSORES_STORAGE_KEY, JSON.stringify(lista));
     saveUsers(utilizadoresAtualizados);
     setNovoProfessor(professorVazio);
     setFormularioAberto(false);
@@ -129,7 +129,6 @@ function ProfessoresPage() {
       description: "O acesso ao sistema foi removido.",
     });
   }
-=======
 
   const { data: professores = [] } = useQuery<Teacher[]>({
     queryKey: ["teachers"],
@@ -137,7 +136,6 @@ function ProfessoresPage() {
       return await getTeachers();
     },
   });
->>>>>>> 6ca60d113ffeab642df8b4579eb5fab744b17a3f
 
   return (
     <AppShell>

@@ -2,6 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { classesEnsinoGeral } from "@/lib/school-data";
+import { useQuery } from "@tanstack/react-query";
+import { getSchoolLevels } from "@/api/schoollevel";
+import { SchoolLevel } from "@/types/schoollevel.ds";
+import { getRegistrations } from "@/api/registration";
+import { Registration } from "@/types/registration.ds";
 
 type Inscricao = {
   id: string;
@@ -33,14 +38,22 @@ export const Route = createFileRoute("/inscricao")({
 });
 
 function InscricaoPage() {
-  const [inscricoes, setInscricoes] = useState<Inscricao[]>([]);
+
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [novaInscricao, setNovaInscricao] = useState(inscricaoVazia);
 
-  useEffect(() => {
-    const guardadas = window.localStorage.getItem(STORAGE_KEY);
-    if (guardadas) setInscricoes(JSON.parse(guardadas) as Inscricao[]);
-  }, []);
+    const { data: inscricoes = [] } = useQuery<Registration[]>({
+      queryKey: ["registrations"],
+      queryFn: async () => {
+        return await getRegistrations();
+      },
+    });
+
+
+  // useEffect(() => {
+  //   const guardadas = window.localStorage.getItem(STORAGE_KEY);
+  //   if (guardadas) setInscricoes(JSON.parse(guardadas) as Inscricao[]);
+  // }, []);
 
   function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -50,7 +63,7 @@ function InscricaoPage() {
       estado: "Pendente",
     };
     const lista = [inscricao, ...inscricoes];
-    setInscricoes(lista);
+    // setInscricoes(lista);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
     setNovaInscricao(inscricaoVazia);
     setFormularioAberto(false);
@@ -95,8 +108,8 @@ function InscricaoPage() {
                     key={inscricao.id}
                     className="border-b border-line/60 last:border-0 hover:bg-surface"
                   >
-                    <td className="py-2.5 px-5 text-foreground">{inscricao.nome}</td>
-                    <td className="py-2.5">{inscricao.classe}</td>
+                    <td className="py-2.5 px-5 text-foreground">{inscricao.candidato}</td>
+                    <td className="py-2.5">{inscricao.classePretendida}</td>
                     <td className="py-2.5">{inscricao.encarregado}</td>
                     <td className="py-2.5">{inscricao.contacto}</td>
                     <td className="py-2.5 pr-5 text-right text-warn">{inscricao.estado}</td>
@@ -139,6 +152,14 @@ function DialogInscricao({
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
+  
+    const { data: niveis = [] } = useQuery<SchoolLevel[]>({
+    queryKey: ["school-levels"],
+    queryFn: async () => {
+      return await getSchoolLevels();
+    },
+  });
+
   if (!aberto) return null;
 
   return (
@@ -169,8 +190,8 @@ function DialogInscricao({
               }
               className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
             >
-              {classesEnsinoGeral.map((classe) => (
-                <option key={classe}>{classe}</option>
+              {niveis.map((nivel) => (
+                <option key={nivel.id}>{nivel.nome}</option>
               ))}
             </select>
           </div>

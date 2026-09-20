@@ -4,9 +4,9 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 import {
   anoLetivo,
   alunos as alunosIniciais,
-  classesEnsinoGeral,
-  type Aluno,
+  classesEnsinoGeral
 } from "@/lib/school-data";
+import { Aluno } from "@/types/student.ds";
 
 const ALUNOS_STORAGE_KEY = "schoolwise:alunos:v1";
 const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
@@ -63,10 +63,10 @@ function MatriculaPage() {
   function adicionarMatricula(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const dadosGuardados = window.localStorage.getItem(ALUNOS_STORAGE_KEY);
-    const alunos = dadosGuardados ? (JSON.parse(dadosGuardados) as Aluno[]) : alunosIniciais;
+    const alunos = dadosGuardados ? (JSON.parse(dadosGuardados) as Aluno[]) : [];
     const numeroProcesso = gerarNumeroProcesso(alunos);
     const turma = `${novaMatricula.classe} ${novaMatricula.turma.toUpperCase()}`;
-    const novoAluno: Aluno = {
+    const novoAluno: any = {
       numero: numeroProcesso,
       nome: novaMatricula.nome.trim(),
       turma,

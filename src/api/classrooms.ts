@@ -1,4 +1,3 @@
-import { Aluno, AlunoAPI } from "@/types/student.ds";
 import { api } from "./client";
 import { Turma, TurmaApi } from "@/types/classroom.ds";
 
