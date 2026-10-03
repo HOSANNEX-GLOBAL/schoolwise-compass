@@ -3,19 +3,11 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { EstadoBadge } from "@/components/EstadoBadge";
 import { Aluno, AlunoAPI } from "@/types/student.ds";
-import { anoLetivo, estado, maxNotaDaTurma, turmas } from "@/lib/school-data";
+import { anoLetivo,  estado,  maxNotaDaTurma, turmas } from "@/lib/school-data";
 import { useQuery } from "@tanstack/react-query";
 import { Turma, TurmaApi } from "@/types/classroom.ds";
 import { getClassrooms } from "@/api/classrooms";
 import { getStudents } from "@/api/students";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/alunos")({
   head: () => ({
@@ -38,39 +30,39 @@ function AlunosPage() {
   const [pesquisa, setPesquisa] = useState("");
   const [turma, setTurma] = useState("Todas");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
-  const [alunosEfetivados, setAlunosEfetivados] = useState<Aluno[]>([]);
-  // const [formularioAberto, setFormularioAberto] = useState(false);
-  // const [novoAluno, setNovoAluno] = useState({} as any);
+  const [formularioAberto, setFormularioAberto] = useState(false);
+  const [novoAluno, setNovoAluno] = useState({} as any);
 
-  // function adicionarAluno(event: FormEvent<HTMLFormElement>) {
-  //   event.preventDefault();
 
-  //   const ano = anoLetivo.slice(0, 4);
-  //   const maiorSequencial = alunos.reduce((maior, aluno) => {
-  //     const [anoDoAluno, sequencial] = aluno.numero.split("-");
-  //     if (anoDoAluno !== ano) return maior;
-  //     return Math.max(maior, Number(sequencial) || 0);
-  //   }, 0);
+  function adicionarAluno(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-  //   const aluno: any = {
-  //     numero: `${ano}-${String(maiorSequencial + 1).padStart(4, "0")}`,
-  //     nome: novoAluno.nome.trim(),
-  //     turma: novoAluno.turma,
-  //     encarregado: novoAluno.encarregado.trim(),
-  //     dataNascimento: novoAluno.dataNascimento,
-  //     contactoEncarregado: novoAluno.contactoEncarregado.trim(),
-  //     estadoMatricula: novoAluno.estadoMatricula,
-  //     notas: {
-  //       t1: Number(novoAluno.t1),
-  //       t2: Number(novoAluno.t2),
-  //       t3: Number(novoAluno.t3),
-  //     },
-  //   };
+    const ano = anoLetivo.slice(0, 4);
+    const maiorSequencial = alunos.reduce((maior, aluno) => {
+      const [anoDoAluno, sequencial] = aluno.numero.split("-");
+      if (anoDoAluno !== ano) return maior;
+      return Math.max(maior, Number(sequencial) || 0);
+    }, 0);
 
-  //   // atualizarAlunos([...alunos, aluno]);
-  //   // setNovoAluno(alunoVazio);
-  //   setFormularioAberto(false);
-  // }
+    const aluno: any = {
+      numero: `${ano}-${String(maiorSequencial + 1).padStart(4, "0")}`,
+      nome: novoAluno.nome.trim(),
+      turma: novoAluno.turma,
+      encarregado: novoAluno.encarregado.trim(),
+      dataNascimento: novoAluno.dataNascimento,
+      contactoEncarregado: novoAluno.contactoEncarregado.trim(),
+      estadoMatricula: novoAluno.estadoMatricula,
+      notas: {
+        t1: Number(novoAluno.t1),
+        t2: Number(novoAluno.t2),
+        t3: Number(novoAluno.t3),
+      },
+    };
+
+    // atualizarAlunos([...alunos, aluno]);
+    // setNovoAluno(alunoVazio);
+    setFormularioAberto(false);
+  }
 
   const { data: turmas = [], isLoading } = useQuery<Turma[]>({
     queryKey: ["classrooms"],
@@ -86,25 +78,20 @@ function AlunosPage() {
     },
   });
 
-  useEffect(() => {
-    const guardados = window.localStorage.getItem("schoolwise:alunos:efetivados:v1");
-    if (guardados) setAlunosEfetivados(JSON.parse(guardados) as Aluno[]);
-  }, []);
-
-  const todosAlunos = useMemo(() => [...alunosEfetivados, ...alunos], [alunosEfetivados, alunos]);
-
   const lista = useMemo(
     () =>
-      todosAlunos
+      alunos
         .map((a) => ({ ...a }))
         .filter((a) => {
           const q = pesquisa.trim().toLowerCase();
           const okQ = !q || a.nome.toLowerCase().includes(q) || a.numero.includes(q);
           const okT = turma === "Todas" || a.turma === turma;
-          const okE = filtroEstado === "Todos" || estado(a.media ?? 0, 20) === filtroEstado;
+          const okE =
+            filtroEstado === "Todos" ||
+            estado(a.media ?? 0, maxNotaDaTurma(a.turma)) === filtroEstado;
           return okQ && okT && okE;
         }),
-    [todosAlunos, pesquisa, turma, filtroEstado],
+    [alunos, pesquisa, turma, filtroEstado],
   );
 
   return (
@@ -112,15 +99,7 @@ function AlunosPage() {
       <PageHeader
         eyebrow="Gestão académica"
         title="Alunos"
-        // action={
-        //   <button
-        //     type="button"
-        //     onClick={() => setFormularioAberto(true)}
-        //     className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
-        //   >
-        //     + Novo aluno
-        //   </button>
-        // }
+       
       />
 
       <section className="px-8">
@@ -149,14 +128,14 @@ function AlunosPage() {
               onChange={(e) => setFiltroEstado(e.target.value)}
               className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-2 text-sm focus:outline-none"
             >
-              {["Todos", "Aprovado", "Recurso", "Reprovado"].map((s) => (
+              {["Todos", "Aprovado", "Reprovado"].map((s) => (
                 <option key={s} className="bg-ink2">
                   {s}
                 </option>
               ))}
             </select>
             <span className="ml-auto text-[11px] text-mut">
-              {lista.length} de {todosAlunos.length} alunos
+              {lista.length} de {alunos.length} alunos
             </span>
           </div>
 
@@ -164,12 +143,10 @@ function AlunosPage() {
             <table className="w-full text-sm min-w-[720px]">
               <thead>
                 <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-4">Nº</th>
-                  <th className="text-left font-medium py-2.5 px-5">Nome</th>
-                  <th className="text-left font-medium py-2.5 px-3">Turma</th>
-                  <th className="text-left font-medium py-2.5">Encarregado</th>
-                  <th className="text-left font-medium py-2.5">Encarregado_Tel</th>
-                  <th className="text-right font-medium py-2.5 pr-5">Estado</th>
+                  <th className="text-left font-medium py-2.5 px-5">Nº</th>
+                  <th className="text-left font-medium py-2.5">Nome</th>
+                  <th className="text-left font-medium py-2.5">Turma</th>
+                  <th className="text-left font-medium py-2.5 pe-5 text-right">Encarregado</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
@@ -181,10 +158,11 @@ function AlunosPage() {
                     <td className="py-2.5 px-5">{a.numero}</td>
                     <td className="py-2.5 text-foreground">{a.nome}</td>
                     <td className="py-2.5">{a.turma}</td>
-                    <td className="py-2.5">{a.encarregado}</td>
-                    <td className="py-2.5">{a.encarregado_tel}</td>
-                    <td className="py-2.5 pr-5 text-right">
-                      <EstadoBadge estado={estado(a.media ?? 0, 20)} />
+           
+                    <td className="py-2.5 pe-5 text-right">{a.encarregado}</td>
+                  
+                    <td className="py-3.5 pr-5 px-5 text-center">
+                      <EstadoBadge estado={estado(a.media ?? 0, maxNotaDaTurma(a.turma))} />
                     </td>
                   </tr>
                 ))}
@@ -201,162 +179,7 @@ function AlunosPage() {
         </div>
       </section>
 
-      {/* <Dialog open={formularioAberto} onOpenChange={setFormularioAberto}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Novo aluno</DialogTitle>
-            <DialogDescription>
-              Registe os dados do aluno, do encarregado e as notas disponíveis.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={adicionarAluno} className="grid gap-4 max-h-[75vh] overflow-y-auto pr-1">
-            <div className="grid gap-2">
-              <div className="grid gap-2">
-                <label htmlFor="turma-aluno" className="text-sm font-medium">
-                  Turma
-                </label>
-                <select
-                  id="turma-aluno"
-                  required
-                  value={novoAluno.turma}
-                  onChange={(event) => setNovoAluno({ ...novoAluno, turma: event.target.value })}
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                >
-                  {turmas.map((item) => (
-                    <option key={item.nome} value={item.nome}>
-                      {item.nome}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <label htmlFor="nome-aluno" className="text-sm font-medium">
-                Nome completo
-              </label>
-              <input
-                id="nome-aluno"
-                required
-                value={novoAluno.nome}
-                onChange={(event) => setNovoAluno({ ...novoAluno, nome: event.target.value })}
-                className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <label htmlFor="nascimento-aluno" className="text-sm font-medium">
-                  Data de nascimento
-                </label>
-                <input
-                  id="nascimento-aluno"
-                  type="date"
-                  required
-                  value={novoAluno.dataNascimento}
-                  onChange={(event) =>
-                    setNovoAluno({ ...novoAluno, dataNascimento: event.target.value })
-                  }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="estado-matricula" className="text-sm font-medium">
-                  Estado da matrícula
-                </label>
-                <select
-                  id="estado-matricula"
-                  value={novoAluno.estadoMatricula}
-                  onChange={(event) =>
-                    setNovoAluno({
-                      ...novoAluno,
-                      // estadoMatricula: event.target.value as Aluno["estadoMatricula"],
-                    })
-                  }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                >
-                  <option>Ativo</option>
-                  <option>Transferido</option>
-                  <option>Concluído</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <label htmlFor="encarregado-aluno" className="text-sm font-medium">
-                  Encarregado
-                </label>
-                <input
-                  id="encarregado-aluno"
-                  required
-                  value={novoAluno.encarregado}
-                  onChange={(event) =>
-                    setNovoAluno({ ...novoAluno, encarregado: event.target.value })
-                  }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="contacto-aluno" className="text-sm font-medium">
-                  Contacto do encarregado
-                </label>
-                <input
-                  id="contacto-aluno"
-                  type="tel"
-                  required
-                  value={novoAluno.contactoEncarregado}
-                  onChange={(event) =>
-                    setNovoAluno({ ...novoAluno, contactoEncarregado: event.target.value })
-                  }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                  placeholder="Ex.: +244 900 000 000"
-                />
-              </div>
-            </div>
-
-            <fieldset className="grid gap-2">
-              <legend className="text-sm font-medium">Notas dos trimestres</legend>
-              <div className="grid grid-cols-3 gap-3">
-                {["t1", "t2", "t3"].map((trimestre) => (
-                  <label key={trimestre} className="grid gap-1 text-xs text-mut">
-                    {trimestre.toUpperCase()}
-                    <input
-                      type="number"
-                      min="0"
-                      // max={maxNotaDaTurma(novoAluno.turma)}
-                      step="0.1"
-                      required
-                      value={novoAluno[trimestre as "t1" | "t2" | "t3"]}
-                      onChange={(event) =>
-                        setNovoAluno({ ...novoAluno, [trimestre]: event.target.value })
-                      }
-                      className="bg-surface rounded-md px-3 py-2 text-sm text-foreground ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                    />
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-
-            <DialogFooter>
-              <button
-                type="button"
-                onClick={() => setFormularioAberto(false)}
-                className="text-sm px-3 py-2 rounded-md ring-1 ring-white/10"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="bg-accent text-accent-foreground text-sm font-semibold px-3 py-2 rounded-md"
-              >
-                Adicionar aluno
-              </button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog> */}
+      
     </AppShell>
   );
 }

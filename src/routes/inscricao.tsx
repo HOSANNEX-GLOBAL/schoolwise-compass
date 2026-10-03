@@ -8,6 +8,18 @@ import { SchoolLevel } from "@/types/schoollevel.ds";
 import { getRegistrations } from "@/api/registration";
 import { Registration } from "@/types/registration.ds";
 
+type Inscricao = {
+  id: string;
+  nome: string;
+  bi: string;
+  endereco: string;
+  dataNascimento: string;
+  encarregado: string;
+  contacto: string;
+  classe: string;
+  estado: "Pendente" | "Aprovada" | "Convertida";
+};
+
 const STORAGE_KEY = "schoolwise:inscricoes:v1";
 const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
 const inscricaoVazia = {
