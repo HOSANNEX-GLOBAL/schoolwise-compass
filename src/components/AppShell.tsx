@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import secretaria from "@/assets/secretaria.jpg";
+
 import guest from "@/assets/gues.jpg";
 
 import { anoLetivo } from "@/lib/school-data";
@@ -79,19 +79,19 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div
           className="absolute -top-40 -left-40 w-180 h-180 drift rounded-full"
           style={{
-            background: "radial-gradient(circle, oklch(0.572 0.129 271 / 35%), transparent 60%)",
+            background: "radial-gradient(circle, oklch(0.572 0.129 271 / 20%), transparent 60%)",
           }}
         />
         <div
           className="absolute top-1/3 -right-50 w-160 h-160 drift2 rounded-full"
           style={{
-            background: "radial-gradient(circle, oklch(0.53 0.086 194 / 32%), transparent 60%)",
+            background: "radial-gradient(circle, oklch(0.53 0.086 194 / 22%), transparent 60%)",
           }}
         />
         <div
           className="absolute -bottom-55 left-1/3 w-140 h-140 drift rounded-full"
           style={{
-            background: "radial-gradient(circle, oklch(0.781 0.155 68 / 14%), transparent 60%)",
+            background: "radial-gradient(circle, oklch(0.781 0.155 68 / 10%), transparent 60%)",
           }}
         />
       </div>

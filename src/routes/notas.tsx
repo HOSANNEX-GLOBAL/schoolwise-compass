@@ -10,7 +10,6 @@ import {
   estado,
   fmt,
   maxNotaDaTurma,
-  media,
   normalizarNotas,
   turmas as turmasIniciais,
   type Aluno,
@@ -213,7 +212,7 @@ function NotasPage() {
       <section className="px-8 grid grid-cols-1 xl:grid-cols-12 gap-4">
         <div className="xl:col-span-8 glass rounded-xl p-5">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <h2 className="text-sm font-semibold">Grelha de notas · Trimestre 2</h2>
+            <h2 className="text-sm font-semibold">Grelha de notas · Trimestre</h2>
             <div className="flex flex-wrap items-center gap-2">
               <select
                 value={turma}

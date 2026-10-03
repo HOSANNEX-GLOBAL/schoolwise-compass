@@ -1,30 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
+import { Check, X } from "lucide-react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { classesEnsinoGeral } from "@/lib/school-data";
 import { useQuery } from "@tanstack/react-query";
 import { getSchoolLevels } from "@/api/schoollevel";
 import { SchoolLevel } from "@/types/schoollevel.ds";
 import { getRegistrations } from "@/api/registration";
 import { Registration } from "@/types/registration.ds";
 
-type Inscricao = {
-  id: string;
-  nome: string;
-  dataNascimento: string;
-  encarregado: string;
-  contacto: string;
-  classe: string;
-  estado: "Pendente" | "Aprovada" | "Convertida";
-};
-
 const STORAGE_KEY = "schoolwise:inscricoes:v1";
+const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
 const inscricaoVazia = {
   nome: "",
+  bi: "",
+  endereco: "",
   dataNascimento: "",
+  classe: "",
   encarregado: "",
   contacto: "",
-  classe: classesEnsinoGeral[0],
 };
 
 export const Route = createFileRoute("/inscricao")({
@@ -38,36 +31,41 @@ export const Route = createFileRoute("/inscricao")({
 });
 
 function InscricaoPage() {
-
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [novaInscricao, setNovaInscricao] = useState(inscricaoVazia);
+  const [mensagem, setMensagem] = useState("");
 
-    const { data: inscricoes = [] } = useQuery<Registration[]>({
-      queryKey: ["registrations"],
-      queryFn: async () => {
-        return await getRegistrations();
-      },
-    });
+  const { data: inscricoesApi = [] } = useQuery<Registration[]>({
+    queryKey: ["registrations"],
+    queryFn: getRegistrations,
+  });
+  const [inscricoes, setInscricoes] = useState<Registration[]>([]);
 
-
-  // useEffect(() => {
-  //   const guardadas = window.localStorage.getItem(STORAGE_KEY);
-  //   if (guardadas) setInscricoes(JSON.parse(guardadas) as Inscricao[]);
-  // }, []);
+  useEffect(() => {
+    const locais = window.localStorage.getItem(STORAGE_KEY);
+    setInscricoes([...(locais ? (JSON.parse(locais) as Registration[]) : []), ...inscricoesApi]);
+  }, [inscricoesApi]);
 
   function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const inscricao: Inscricao = {
-      id: crypto.randomUUID(),
-      ...novaInscricao,
+    const inscricao: Registration = {
+      id: Date.now(),
+      bi: novaInscricao.bi.trim(),
+      candidato: novaInscricao.nome.trim(),
+      dataNascimento: novaInscricao.dataNascimento,
+      classePretendida: novaInscricao.classe,
+      encarregado: novaInscricao.encarregado.trim(),
+      contacto: novaInscricao.contacto.trim(),
+      endereco: novaInscricao.endereco.trim(),
       estado: "Pendente",
     };
     const lista = [inscricao, ...inscricoes];
-    // setInscricoes(lista);
+    setInscricoes(lista);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
     setNovaInscricao(inscricaoVazia);
     setFormularioAberto(false);
   }
+
 
   return (
     <AppShell>
@@ -96,10 +94,11 @@ function InscricaoPage() {
               <thead>
                 <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
                   <th className="text-left font-medium py-2.5 px-5">Candidato</th>
-                  <th className="text-left font-medium py-2.5">Classe pretendida</th>
-                  <th className="text-left font-medium py-2.5">Encarregado</th>
+                  <th className="text-left font-medium py-2.5 pe-5">Classe pretendida</th>
+                  <th className="text-left font-medium py-2.5 pe-5">Encarregado</th>
                   <th className="text-left font-medium py-2.5">Contacto</th>
                   <th className="text-right font-medium py-2.5 pr-5">Estado</th>
+                  <th className="text-right font-medium py-2.5 pr-5">Decisão</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
@@ -112,12 +111,38 @@ function InscricaoPage() {
                     <td className="py-2.5">{inscricao.classePretendida}</td>
                     <td className="py-2.5">{inscricao.encarregado}</td>
                     <td className="py-2.5">{inscricao.contacto}</td>
-                    <td className="py-2.5 pr-5 text-right text-warn">{inscricao.estado}</td>
+                    <td className="py-2.5 text-right text-warn">{inscricao.estado}</td>
+                    <td className="py-2.5 pr-5 text-right">
+
+                      {/* Abaixo esta o botão de aprovação da inscrição */}
+                      {inscricao.estado === "Pendente" && (
+                        <span className="inline-flex gap-2">
+                          <button
+                            type="button"
+                            title="Aprovar inscrição"
+                            aria-label={`Aprovar ${inscricao.candidato}`}
+                            className="rounded-md p-1.5  text-pass ring-2 ring-pass/40 hover:bg-pass/10"
+                          >
+                            <Check size={15} />
+                          </button>
+                          {/* Abaixo esta o botão de recusação da inscrição */}
+                          <button
+                            type="button"
+                            title="Recusar inscrição"
+                            aria-label={`Recusar ${inscricao.candidato}`}
+                            className="rounded-md p-1.5 text-warn ring-2 ring-warn/40 hover:bg-warn/10"
+                          >
+                            <X size={15} />
+                          </button>
+                        </span>
+                      )}
+                    </td>
                   </tr>
                 ))}
+
                 {inscricoes.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-mut">
+                    <td colSpan={6} className="py-10 text-center text-mut">
                       Nenhuma inscrição registada.
                     </td>
                   </tr>
@@ -127,6 +152,12 @@ function InscricaoPage() {
           </div>
         </div>
       </section>
+
+      {mensagem && (
+        <p className="mx-8 mt-4 rounded-md border border-pass/30 bg-pass/10 px-4 py-3 text-sm text-pass">
+          {mensagem}
+        </p>
+      )}
 
       <DialogInscricao
         aberto={formularioAberto}
@@ -152,8 +183,7 @@ function DialogInscricao({
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
-  
-    const { data: niveis = [] } = useQuery<SchoolLevel[]>({
+  const { data: niveis = [] } = useQuery<SchoolLevel[]>({
     queryKey: ["school-levels"],
     queryFn: async () => {
       return await getSchoolLevels();
@@ -178,9 +208,26 @@ function DialogInscricao({
           <div className="grid grid-cols-2 gap-3">
             <input
               required
+              value={valor.bi}
+              onChange={(event) => onChange({ ...valor, bi: event.target.value })}
+              placeholder="BI / Cédula"
+              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+            <input
+              required
+              value={valor.endereco}
+              onChange={(event) => onChange({ ...valor, endereco: event.target.value })}
+              placeholder="Endereço"
+              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              required
               type="date"
               value={valor.dataNascimento}
               onChange={(event) => onChange({ ...valor, dataNascimento: event.target.value })}
+              placeholder="Data de nascimento"
               className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
             />
             <select
@@ -195,21 +242,23 @@ function DialogInscricao({
               ))}
             </select>
           </div>
-          <input
-            required
-            value={valor.encarregado}
-            onChange={(event) => onChange({ ...valor, encarregado: event.target.value })}
-            placeholder="Nome do encarregado"
-            className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
-          />
-          <input
-            required
-            type="tel"
-            value={valor.contacto}
-            onChange={(event) => onChange({ ...valor, contacto: event.target.value })}
-            placeholder="Contacto do encarregado"
-            className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              required
+              value={valor.encarregado}
+              onChange={(event) => onChange({ ...valor, encarregado: event.target.value })}
+              placeholder="Nome do encarregado"
+              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+            <input
+              required
+              type="tel"
+              value={valor.contacto}
+              onChange={(event) => onChange({ ...valor, contacto: event.target.value })}
+              placeholder="Contacto do encarregado"
+              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+          </div>
           <div className="flex justify-end gap-2">
             <button
               type="button"

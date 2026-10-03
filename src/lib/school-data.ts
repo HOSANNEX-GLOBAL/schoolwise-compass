@@ -1,13 +1,13 @@
 export type Estado = "Aprovado" | "Reprovado" | "Recurso";
 
- type Aluno = {
+export type Aluno = {
   numero: string;
   nome: string;
   turma: string;
   encarregado: string;
   dataNascimento?: string;
   contactoEncarregado?: string;
-  estadoMatricula?: "Ativo" | "Transferido" | "Concluído";
+  estadoMatricula?: "Ativo" | "Transferido";
   notas: { t1: number; t2: number; t3: number };
 };
 
@@ -55,20 +55,47 @@ export function cicloDaClasse(classe: string): string {
   return "I ciclo do ensino secundário";
 }
 
-
 export const alunos: Aluno[] = [
-  { numero: "2024-0187", nome: "António F. Neto", turma: "10.º A", encarregado: "Fernando Neto", notas: { t1: 15, t2: 17, t3: 14 } },
-  { numero: "2024-0192", nome: "Carla M. Vieira", turma: "10.º B", encarregado: "Manuela Vieira", notas: { t1: 9, t2: 11, t3: 10 } },
-  { numero: "2024-0203", nome: "Domingos A. Neto", turma: "10.º A", encarregado: "Aida Neto", notas: { t1: 7, t2: 8, t3: 6 } },
-  { numero: "2024-0211", nome: "Beatriz L. Sousa", turma: "11.º C", encarregado: "Luís Sousa", notas: { t1: 18, t2: 19, t3: 16 } },
-  { numero: "2024-0219", nome: "Elsa P. Cardoso", turma: "11.º C", encarregado: "Paula Cardoso", notas: { t1: 14, t2: 13, t3: 15 } },
-  { numero: "2024-0224", nome: "Joaquim K. Bento", turma: "12.º A", encarregado: "Kiala Bento", notas: { t1: 12, t2: 10, t3:13 } },
-  { numero: "2024-0231", nome: "Lúcia N. Fernandes", turma: "12.º A", encarregado: "Nelson Fernandes", notas: { t1: 16, t2: 15, t3: 17 } },
-  { numero: "2024-0240", nome: "Miguel S. Baptista", turma: "10.º B", encarregado: "Sara Baptista", notas: { t1: 8, t2: 9, t3: 11 } },
-  { numero: "2024-0246", nome: "Isabel R. Kiala", turma: "11.º B", encarregado: "Rosa Kiala", notas: { t1: 13, t2: 14, t3: 12 } },
-  { numero: "2024-0252", nome: "Pedro M. dos Santos", turma: "11.º B", encarregado: "Marta dos Santos", notas: { t1: 11, t2: 12, t3: 9 } },
-];
+  {
+    numero: "2024-0187",
+    nome: "António F. Neto",
+    turma: "10.º A",
+    encarregado: "Fernando Neto",
+    dataNascimento: "2008-05-15",
+    notas: { t1: 15, t2: 17, t3: 14 },
+  },
+  {
+    numero: "2024-0192",
+    nome: "Carla M. Vieira",
+    turma: "10.º B",
+    encarregado: "Manuela Vieira",
+    dataNascimento: "2009-12-03",
+    notas: { t1: 9, t2: 11, t3: 10 },
+  },
+  {
+    numero: "2024-0203",
+    nome: "Domingos A. Neto",
+    turma: "10.º A",
+    encarregado: "Aida Neto",
+    dataNascimento: "2008-08-20",
+    notas: { t1: 7, t2: 8, t3: 6 },
+  },
+  {
+    numero: "2024-0211",
+    nome: "Beatriz L. Sousa",
+    turma: "11.º C",
+    encarregado: "Luís Sousa",
+    notas: { t1: 18, t2: 19, t3: 16 },
+  },
+  {
+    numero: "2024-0219",
+    nome: "Elsa P. Cardoso",
+    turma: "11.º C",
+    encarregado: "Paula Cardoso",
+    notas: { t1: 14, t2: 13, t3: 15 },
+  },
 
+];
 
 export function media(n: { t1: number; t2: number; t3: number }): number {
   return Math.round(((n.t1 + n.t2 + n.t3) / 3) * 10) / 10;
@@ -142,33 +169,10 @@ export const turmas: Turma[] = [
     sala: "A-04",
     mediaTurma: 13.0,
   },
-  {
-    nome: "7.ª classe A",
-    ciclo: "I ciclo do ensino secundário",
-    diretor: "Prof. Adão Muanza",
-    alunos: 28,
-    sala: "C-08",
-    mediaTurma: 12.6,
-  },
-  {
-    nome: "8.ª classe A",
-    ciclo: "I ciclo do ensino secundário",
-    diretor: "Prof.ª Cátia Rosário",
-    alunos: 30,
-    sala: "C-10",
-    mediaTurma: 13.2,
-  },
-  {
-    nome: "9.ª classe A",
-    ciclo: "I ciclo do ensino secundário",
-    diretor: "Prof. Almeida Cunha",
-    alunos: 25,
-    sala: "C-12",
-    mediaTurma: 14.0,
-  },
+
 ];
 
- type Disciplina = {
+export type Disciplina = {
   nome: string;
   codigo: string;
   cargaHoraria: number;
@@ -212,27 +216,7 @@ export const disciplinas: Disciplina[] = [
     professor: "Prof. Hélder Pinto",
     aprovacao: 88,
   },
-  {
-    nome: "Física",
-    codigo: "FIS",
-    cargaHoraria: 4,
-    professor: "Prof.ª Ângela Dias",
-    aprovacao: 69,
-  },
-  {
-    nome: "Química",
-    codigo: "QUI",
-    cargaHoraria: 4,
-    professor: "Prof. Adão Muanza",
-    aprovacao: 74,
-  },
-  {
-    nome: "Inglês",
-    codigo: "ING",
-    cargaHoraria: 3,
-    professor: "Prof.ª Cátia Rosário",
-    aprovacao: 90,
-  },
+  
 ];
 
 export type Professor = {
@@ -258,48 +242,7 @@ export const professores: Professor[] = [
     contacto: "r.lemos@escola.ao",
     situacao: "Efetivo",
   },
-  {
-    nome: "Ivo Cardoso",
-    disciplina: "Ciências Naturais",
-    turmas: ["7.ª classe A"],
-    contacto: "i.cardoso@escola.ao",
-    situacao: "Contratado",
-  },
-  {
-    nome: "Sónia Matos",
-    disciplina: "História",
-    turmas: ["4.ª classe A", "8.ª classe A"],
-    contacto: "s.matos@escola.ao",
-    situacao: "Efetivo",
-  },
-  {
-    nome: "Hélder Pinto",
-    disciplina: "Geografia",
-    turmas: ["9.ª classe A"],
-    contacto: "h.pinto@escola.ao",
-    situacao: "Contratado",
-  },
-  {
-    nome: "Ângela Dias",
-    disciplina: "Física",
-    turmas: ["8.ª classe A", "4.ª classe A"],
-    contacto: "a.dias@escola.ao",
-    situacao: "Efetivo",
-  },
-  {
-    nome: "Adão Muanza",
-    disciplina: "Química",
-    turmas: ["7.ª classe A", "9.ª classe A"],
-    contacto: "a.muanza@escola.ao",
-    situacao: "Contratado",
-  },
-  {
-    nome: "Cátia Rosário",
-    disciplina: "Inglês",
-    turmas: ["1.ª classe A", "2.ª classe A"],
-    contacto: "c.rosario@escola.ao",
-    situacao: "Efetivo",
-  },
+
 ];
 
 export type Documento = {

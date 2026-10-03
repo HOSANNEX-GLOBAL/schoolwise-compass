@@ -8,7 +8,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Turma, TurmaApi } from "@/types/classroom.ds";
 import { getClassrooms } from "@/api/classrooms";
 import { getStudents } from "@/api/students";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/alunos")({
   head: () => ({
@@ -31,39 +38,39 @@ function AlunosPage() {
   const [pesquisa, setPesquisa] = useState("");
   const [turma, setTurma] = useState("Todas");
   const [filtroEstado, setFiltroEstado] = useState("Todos");
-  const [formularioAberto, setFormularioAberto] = useState(false);
-  const [novoAluno, setNovoAluno] = useState({} as any);
+  const [alunosEfetivados, setAlunosEfetivados] = useState<Aluno[]>([]);
+  // const [formularioAberto, setFormularioAberto] = useState(false);
+  // const [novoAluno, setNovoAluno] = useState({} as any);
 
+  // function adicionarAluno(event: FormEvent<HTMLFormElement>) {
+  //   event.preventDefault();
 
-  function adicionarAluno(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  //   const ano = anoLetivo.slice(0, 4);
+  //   const maiorSequencial = alunos.reduce((maior, aluno) => {
+  //     const [anoDoAluno, sequencial] = aluno.numero.split("-");
+  //     if (anoDoAluno !== ano) return maior;
+  //     return Math.max(maior, Number(sequencial) || 0);
+  //   }, 0);
 
-    const ano = anoLetivo.slice(0, 4);
-    const maiorSequencial = alunos.reduce((maior, aluno) => {
-      const [anoDoAluno, sequencial] = aluno.numero.split("-");
-      if (anoDoAluno !== ano) return maior;
-      return Math.max(maior, Number(sequencial) || 0);
-    }, 0);
+  //   const aluno: any = {
+  //     numero: `${ano}-${String(maiorSequencial + 1).padStart(4, "0")}`,
+  //     nome: novoAluno.nome.trim(),
+  //     turma: novoAluno.turma,
+  //     encarregado: novoAluno.encarregado.trim(),
+  //     dataNascimento: novoAluno.dataNascimento,
+  //     contactoEncarregado: novoAluno.contactoEncarregado.trim(),
+  //     estadoMatricula: novoAluno.estadoMatricula,
+  //     notas: {
+  //       t1: Number(novoAluno.t1),
+  //       t2: Number(novoAluno.t2),
+  //       t3: Number(novoAluno.t3),
+  //     },
+  //   };
 
-    const aluno: any = {
-      numero: `${ano}-${String(maiorSequencial + 1).padStart(4, "0")}`,
-      nome: novoAluno.nome.trim(),
-      turma: novoAluno.turma,
-      encarregado: novoAluno.encarregado.trim(),
-      dataNascimento: novoAluno.dataNascimento,
-      contactoEncarregado: novoAluno.contactoEncarregado.trim(),
-      estadoMatricula: novoAluno.estadoMatricula,
-      notas: {
-        t1: Number(novoAluno.t1),
-        t2: Number(novoAluno.t2),
-        t3: Number(novoAluno.t3),
-      },
-    };
-
-    // atualizarAlunos([...alunos, aluno]);
-    // setNovoAluno(alunoVazio);
-    setFormularioAberto(false);
-  }
+  //   // atualizarAlunos([...alunos, aluno]);
+  //   // setNovoAluno(alunoVazio);
+  //   setFormularioAberto(false);
+  // }
 
   const { data: turmas = [], isLoading } = useQuery<Turma[]>({
     queryKey: ["classrooms"],
@@ -79,18 +86,25 @@ function AlunosPage() {
     },
   });
 
+  useEffect(() => {
+    const guardados = window.localStorage.getItem("schoolwise:alunos:efetivados:v1");
+    if (guardados) setAlunosEfetivados(JSON.parse(guardados) as Aluno[]);
+  }, []);
+
+  const todosAlunos = useMemo(() => [...alunosEfetivados, ...alunos], [alunosEfetivados, alunos]);
+
   const lista = useMemo(
     () =>
-      alunos
+      todosAlunos
         .map((a) => ({ ...a }))
         .filter((a) => {
           const q = pesquisa.trim().toLowerCase();
           const okQ = !q || a.nome.toLowerCase().includes(q) || a.numero.includes(q);
           const okT = turma === "Todas" || a.turma === turma;
-          const okE = filtroEstado === "Todos" || estado(a.media) === filtroEstado;
+          const okE = filtroEstado === "Todos" || estado(a.media ?? 0, 20) === filtroEstado;
           return okQ && okT && okE;
         }),
-    [alunos, pesquisa, turma, filtroEstado],
+    [todosAlunos, pesquisa, turma, filtroEstado],
   );
 
   return (
@@ -98,15 +112,15 @@ function AlunosPage() {
       <PageHeader
         eyebrow="Gestão académica"
         title="Alunos"
-        action={
-          <button
-            type="button"
-            onClick={() => setFormularioAberto(true)}
-            className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
-          >
-            + Novo aluno
-          </button>
-        }
+        // action={
+        //   <button
+        //     type="button"
+        //     onClick={() => setFormularioAberto(true)}
+        //     className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
+        //   >
+        //     + Novo aluno
+        //   </button>
+        // }
       />
 
       <section className="px-8">
@@ -142,7 +156,7 @@ function AlunosPage() {
               ))}
             </select>
             <span className="ml-auto text-[11px] text-mut">
-              {lista.length} de {alunos.length} alunos
+              {lista.length} de {todosAlunos.length} alunos
             </span>
           </div>
 
@@ -150,11 +164,11 @@ function AlunosPage() {
             <table className="w-full text-sm min-w-[720px]">
               <thead>
                 <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Nº</th>
-                  <th className="text-left font-medium py-2.5">Nome</th>
-                  <th className="text-left font-medium py-2.5">Turma</th>
+                  <th className="text-left font-medium py-2.5 px-4">Nº</th>
+                  <th className="text-left font-medium py-2.5 px-5">Nome</th>
+                  <th className="text-left font-medium py-2.5 px-3">Turma</th>
                   <th className="text-left font-medium py-2.5">Encarregado</th>
-                  <th className="text-left font-medium py-2.5">Média</th>
+                  <th className="text-left font-medium py-2.5">Encarregado_Tel</th>
                   <th className="text-right font-medium py-2.5 pr-5">Estado</th>
                 </tr>
               </thead>
@@ -168,9 +182,9 @@ function AlunosPage() {
                     <td className="py-2.5 text-foreground">{a.nome}</td>
                     <td className="py-2.5">{a.turma}</td>
                     <td className="py-2.5">{a.encarregado}</td>
-                    <td className="py-2.5">{a.media}</td>
+                    <td className="py-2.5">{a.encarregado_tel}</td>
                     <td className="py-2.5 pr-5 text-right">
-                      <EstadoBadge estado={estado(a.media)} />
+                      <EstadoBadge estado={estado(a.media ?? 0, 20)} />
                     </td>
                   </tr>
                 ))}
@@ -187,7 +201,7 @@ function AlunosPage() {
         </div>
       </section>
 
-      <Dialog open={formularioAberto} onOpenChange={setFormularioAberto}>
+      {/* <Dialog open={formularioAberto} onOpenChange={setFormularioAberto}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Novo aluno</DialogTitle>
@@ -342,7 +356,7 @@ function AlunosPage() {
             </DialogFooter>
           </form>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </AppShell>
   );
 }

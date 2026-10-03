@@ -6,8 +6,14 @@ import { Subject, SubjectApi } from "@/types/subject.ds";
 import { api } from "@/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { getSubjects } from "@/api/subjects";
-import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DialogContent } from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/disciplinas")({
   head: () => ({
@@ -24,9 +30,23 @@ export const Route = createFileRoute("/disciplinas")({
   component: DisciplinasPage,
 });
 
+type NovaDisciplina = {
+  nome: string;
+  professor: string;
+  cargaHoraria: string;
+  aprovacao: string;
+};
+
+const disciplinaVazia: NovaDisciplina = {
+  nome: "",
+  professor: "",
+  cargaHoraria: "",
+  aprovacao: "",
+};
+
 function DisciplinasPage() {
   const [formularioAberto, setFormularioAberto] = useState(false);
-  const [novaDisciplina, setNovaDisciplina] = useState({} as any);
+  const [novaDisciplina, setNovaDisciplina] = useState(disciplinaVazia);
 
   useEffect(() => {
     // const guardadas = window.localStorage.getItem(DISCIPLINAS_STORAGE_KEY);
@@ -71,12 +91,11 @@ function DisciplinasPage() {
     setFormularioAberto(false);
   }
 
-  
-    const { data: disciplinas = [], isLoading } = 
-    useQuery<Subject[]>({
+  const { data: disciplinas = [], isLoading } = useQuery<Subject[]>({
     queryKey: ["subjects"],
     queryFn: async () => {
-      return  await getSubjects();}
+      return await getSubjects();
+    },
   });
 
   return (
@@ -143,7 +162,10 @@ function DisciplinasPage() {
             <DialogTitle>Nova disciplina</DialogTitle>
             <DialogDescription>Adicione uma disciplina ao plano curricular.</DialogDescription>
           </DialogHeader>
-          <form onSubmit={adicionarDisciplina} className="grid gap-4 max-h-[75vh] overflow-y-auto pr-1">
+          <form
+            onSubmit={adicionarDisciplina}
+            className="grid gap-4 max-h-[75vh] overflow-y-auto pr-1"
+          >
             {(
               [
                 ["nome", "Nome", "text"],
@@ -159,7 +181,7 @@ function DisciplinasPage() {
                   type={tipo}
                   min={campo === "cargaHoraria" ? 1 : campo === "aprovacao" ? 0 : undefined}
                   max={campo === "aprovacao" ? 100 : undefined}
-                  value={""}
+                  value={novaDisciplina[campo] ?? ""}
                   onChange={(event) =>
                     setNovaDisciplina({ ...novaDisciplina, [campo]: event.target.value })
                   }
