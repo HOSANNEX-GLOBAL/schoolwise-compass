@@ -6,8 +6,14 @@ import { Subject, SubjectApi } from "@/types/subject.ds";
 import { api } from "@/api/client";
 import { useQuery } from "@tanstack/react-query";
 import { getSubjects } from "@/api/subjects";
-import { Dialog, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { DialogContent } from "@radix-ui/react-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/disciplinas")({
   head: () => ({

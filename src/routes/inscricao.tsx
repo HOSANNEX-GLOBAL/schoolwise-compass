@@ -11,6 +11,8 @@ import { Registration } from "@/types/registration.ds";
 type Inscricao = {
   id: string;
   nome: string;
+  bi: string;
+  endereco: string;
   dataNascimento: string;
   encarregado: string;
   contacto: string;
@@ -21,6 +23,8 @@ type Inscricao = {
 const STORAGE_KEY = "schoolwise:inscricoes:v1";
 const inscricaoVazia = {
   nome: "",
+  bi: "",
+  endereco: "",
   dataNascimento: "",
   encarregado: "",
   contacto: "",
@@ -175,6 +179,22 @@ function DialogInscricao({
             placeholder="Nome completo"
             className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
           />
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              required
+              value={valor.bi}
+              onChange={(event) => onChange({ ...valor, bi: event.target.value })}
+              placeholder="BI / Cédula"
+              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+            <input
+              required
+              value={valor.endereco}
+              onChange={(event) => onChange({ ...valor, endereco: event.target.value })}
+              placeholder="Endereço"
+              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <input
               required

@@ -74,7 +74,7 @@ function MatriculaPage() {
       dataNascimento: novaMatricula.dataNascimento,
       contactoEncarregado: novaMatricula.contactoEncarregado.trim(),
       estadoMatricula: "Ativo",
-      notas: { t1: 0, t2: 0, t3: 0 },
+      // notas: { t1: 0, t2: 0, t3: 0 },
     };
     const alunosAtualizados = [...alunos, novoAluno];
     const matricula: Matricula = {
@@ -98,15 +98,15 @@ function MatriculaPage() {
       <PageHeader
         eyebrow="Admissões"
         title="Matrículas"
-        action={
-          <button
-            type="button"
-            onClick={() => setFormularioAberto(true)}
-            className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
-          >
-            + Nova matrícula
-          </button>
-        }
+        // action={
+        //   <button
+        //     type="button"
+        //     onClick={() => setFormularioAberto(true)}
+        //     className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
+        //   >
+        //     + Nova matrícula
+        //   </button>
+        // }
       />
 
       <section className="px-8">
@@ -152,7 +152,7 @@ function MatriculaPage() {
         </div>
       </section>
 
-      {formularioAberto && (
+      {/* {formularioAberto && (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4">
           <div className="glass w-full max-w-lg rounded-xl p-6">
             <h2 className="text-lg font-semibold">Nova matrícula</h2>
@@ -242,7 +242,7 @@ function MatriculaPage() {
             </form>
           </div>
         </div>
-      )}
+      )} */}
     </AppShell>
   );
 }

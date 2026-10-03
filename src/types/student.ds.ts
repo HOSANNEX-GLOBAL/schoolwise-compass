@@ -24,6 +24,6 @@ export type Aluno = {
   nome: string;
   turma: string;
   encarregado: string;
-  media: number;
-  // notas: { t1: number; t2: number; t3: number };
+//   media: number;
+//   // notas: { t1: number; t2: number; t3: number };
 };

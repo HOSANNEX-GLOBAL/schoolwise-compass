@@ -302,9 +302,9 @@ function NotasPage() {
                           className={`font-semibold ${
                             e === "Aprovado"
                               ? "text-pass"
-                              : e === "Recurso"
-                                ? "text-warn"
-                                : "text-fail"
+                              : e === "Reprovado"
+                                ? "text-fail"
+                                : "text-warn"
                           }`}
                         >
                           {fmt(m)} /{maxNota}
