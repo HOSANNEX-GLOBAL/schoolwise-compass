@@ -54,8 +54,7 @@ function InscricaoPage() {
   const [inscricoes, setInscricoes] = useState<Registration[]>([]);
 
   useEffect(() => {
-    const locais = window.localStorage.getItem(STORAGE_KEY);
-    setInscricoes([...(locais ? (JSON.parse(locais) as Registration[]) : []), ...inscricoesApi]);
+    setInscricoes([...inscricoesApi]);
   }, [inscricoesApi]);
 
   function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
@@ -77,7 +76,6 @@ function InscricaoPage() {
     setNovaInscricao(inscricaoVazia);
     setFormularioAberto(false);
   }
-
 
   return (
     <AppShell>
@@ -125,9 +123,8 @@ function InscricaoPage() {
                     <td className="py-2.5">{inscricao.contacto}</td>
                     <td className="py-2.5 text-right text-warn">{inscricao.estado}</td>
                     <td className="py-2.5 pr-5 text-right">
-
                       {/* Abaixo esta o botão de aprovação da inscrição */}
-                      {inscricao.estado === "Pendente" && (
+                      {inscricao.estado === "pending" && (
                         <span className="inline-flex gap-2">
                           <button
                             type="button"
