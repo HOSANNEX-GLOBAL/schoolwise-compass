@@ -6,14 +6,10 @@ import { AppShell, PageHeader } from "@/components/AppShell";
 
 import {
   anoLetivo,
-  classesEnsinoGeral,
-  cicloDaClasse,
   maxNotaDaTurma,
-  type Turma,
 } from "@/lib/school-data";
 
-import { TurmaApi } from "@/types/classroom.ds";
-import { api } from "@/api/client";
+import { TurmaApi, TurmaForm, Turma } from "@/types/classroom.ds";
 
 import {
   Dialog,
@@ -24,20 +20,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { getClassrooms, postClassRoom } from "@/api/classrooms";
+import { getSchoolLevels } from "@/api/schoollevel";
+import { SchoolLevel } from "@/types/schoollevel.ds";
+
 const turmaVazia: {
-  classe: (typeof classesEnsinoGeral)[number];
+  id: number;
+  classe: number;
   letra: string;
-  diretor: string;
-  alunos: string;
+  // diretor: string;
+  alunos: number;
   sala: string;
-  mediaTurma: string;
 } = {
-  classe: classesEnsinoGeral[0],
-  letra: "A",
-  diretor: "",
-  alunos: "0",
-  sala: "",
-  mediaTurma: "0",
+  id: 0,
+  classe: 0,
+  letra: "",
+  // diretor: "",
+  alunos: 0,
+  sala: ""
 };
 
 export const Route = createFileRoute("/turmas")({
@@ -69,54 +69,39 @@ function TurmasPage() {
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [novaTurma, setNovaTurma] = useState(turmaVazia);
 
-  const {
-    data: turmas = [],
-    isLoading,
-    isError,
-    error,
-  } = useQuery<Turma[]>({
-    queryKey: ["classrooms"],
 
-    queryFn: async () => {
-      const response = await api.get("/classrooms");
+    const { data: turmas = [], isLoading,isError,error } = useQuery<Turma[]>({
+      queryKey: ["classrooms"],
+      queryFn: async () => {
+        return await getClassrooms();
+      },
+    });
 
-      const turmasData: Turma[] = response.data.map(
-        (turma: TurmaApi) => ({
-          nome: turma.name,
-          ciclo: turma.cycle,
-          diretor: turma.teacher?.name ?? "",
-          alunos: turma.capacity,
-          sala: turma.room,
-          mediaTurma: turma.class_average,
-        })
-      );
+        const { data: niveis = [] } = useQuery<SchoolLevel[]>({
+        queryKey: ["school-levels"],
+        queryFn: async () => {
+          return await getSchoolLevels();
+        },
+      });
 
-      return turmasData;
-    },
-  });
-
-  function adicionarTurma(event: FormEvent<HTMLFormElement>) {
+  async function adicionarTurma(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     /*
-     * Neste momento o formulário continua apenas a preparar
-     * os dados da nova turma.
-     *
-     * Para persistir no backend, o próximo passo será:
-     *
-     * await api.post("/classrooms", {...})
      *
      * e depois invalidar a query ["classrooms"].
      */
 
-    console.log("Nova turma:", {
-      nome: `${novaTurma.classe} ${novaTurma.letra}`,
-      ciclo: cicloDaClasse(novaTurma.classe),
-      diretor: novaTurma.diretor.trim(),
-      alunos: Number(novaTurma.alunos),
-      sala: novaTurma.sala.trim(),
-      mediaTurma: Number(novaTurma.mediaTurma),
-    });
+      const classroom: TurmaForm = {
+        id: novaTurma.id,
+        name: `${novaTurma.letra}`,
+        room: novaTurma.sala.trim(),
+        capacity: novaTurma.alunos,
+        school_level_id: novaTurma.classe,
+      };
+      
+     const result = await postClassRoom(classroom);
+
+     console.log("Turma criada com sucesso:", result);
 
     setNovaTurma(turmaVazia);
     setFormularioAberto(false);
@@ -273,18 +258,17 @@ function TurmasPage() {
                 onChange={(event) =>
                   setNovaTurma({
                     ...novaTurma,
-                    classe:
-                      event.target.value as (typeof classesEnsinoGeral)[number],
+                    classe: parseInt(event.target.value) || 0,
                   })
                 }
                 className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
               >
-                {classesEnsinoGeral.map((classe) => (
+                {niveis.map((classe) => (
                   <option
-                    key={classe}
-                    value={classe}
+                    key={classe.id}
+                    value={classe.id}
                   >
-                    {classe}
+                    {classe.nome}
                   </option>
                 ))}
               </select>
@@ -339,7 +323,10 @@ function TurmasPage() {
               </div>
             </div>
 
-            <div className="grid gap-2">
+      {/* {false
+      &&
+      <>
+          <div className="grid gap-2">
               <label
                 htmlFor="diretor-turma"
                 className="text-sm font-medium"
@@ -361,14 +348,17 @@ function TurmasPage() {
                 placeholder="Ex.: Prof. Almeida Cunha"
               />
             </div>
+      </> */}
+      
+        
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="gap-4">
               <div className="grid gap-2">
                 <label
                   htmlFor="alunos-turma"
                   className="text-sm font-medium"
                 >
-                  N.º de alunos
+                  Capacidade da Turma (nº de alunos)
                 </label>
 
                 <input
@@ -380,39 +370,14 @@ function TurmasPage() {
                   onChange={(event) =>
                     setNovaTurma({
                       ...novaTurma,
-                      alunos: event.target.value,
+                      alunos: parseInt(event.target.value) || 0,
                     })
                   }
                   className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
                 />
               </div>
 
-              <div className="grid gap-2">
-                <label
-                  htmlFor="media-turma"
-                  className="text-sm font-medium"
-                >
-                  Média da turma
-                </label>
-
-                <input
-                  id="media-turma"
-                  type="number"
-                  min="0"
-                  max="20"
-                  step="0.1"
-                  required
-                  value={novaTurma.mediaTurma}
-                  onChange={(event) =>
-                    setNovaTurma({
-                      ...novaTurma,
-                      mediaTurma: event.target.value,
-                    })
-                  }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
               </div>
-            </div>
 
             <DialogFooter>
               <button

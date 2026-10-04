@@ -9,7 +9,7 @@ export type RegistrationAPI = {
   guardian_phone: string;
   name: string;
   school_level_id: number;
-  status: null | string;
+  status: string;
   address: string;
   updated_at: string;
   school_level: SchoolLevelAPI;
@@ -24,7 +24,8 @@ export type Registration = {
     encarregado: string;
     contacto: string;
     endereco: string;
-    estado: null | string;
+    estado: string;
+    classId: number;
 }
 
 export type RegistrationForm = {

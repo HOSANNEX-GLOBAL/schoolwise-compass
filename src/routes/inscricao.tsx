@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSchoolLevels } from "@/api/schoollevel";
 import { SchoolLevel } from "@/types/schoollevel.ds";
 import { getRegistrations, postRegistrations, putRegistrations, updateRegistrationStatus } from "@/api/registration";
@@ -46,6 +46,8 @@ function InscricaoPage() {
   const [novaInscricao, setNovaInscricao] = useState(inscricaoVazia);
   const [edicaoAberta, setEdicaoAberta] = useState(false);
 
+  const queryClient = useQueryClient();
+
     const { data: inscricoes = [] } = useQuery<Registration[]>({
       queryKey: ["registrations"],
       queryFn: async () => {
@@ -54,8 +56,28 @@ function InscricaoPage() {
     });
 
 
-  function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
+    const atualizarStatusInscricao = async (inscricao: Registration, status: number) => {
+      
+        if(inscricao.id){
+          const inscricaoAtualizada = await updateRegistrationStatus({ id: inscricao.id, status: status })
+          inscricoes.splice(inscricoes.findIndex(i => i.id === inscricaoAtualizada.id), 1, inscricaoAtualizada)
+          
+          queryClient.setQueryData<Registration[]>(
+            ["registrations"],
+            (old = []) =>
+              old.map(i =>
+                i.id === inscricaoAtualizada.id
+                  ? inscricaoAtualizada
+                  : i
+              )
+          );
+
+        }
+    }
+
+  async function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     const inscricao: RegistrationForm = {
       id: novaInscricao.id,
       name: novaInscricao.nome,
@@ -69,10 +91,12 @@ function InscricaoPage() {
     
 
     if(edicaoAberta){
-      putRegistrations(inscricao);
+      const inscricaoAtualizada = await putRegistrations(inscricao);
+      inscricoes.splice(inscricoes.findIndex(i => i.id === inscricaoAtualizada.id), 1, inscricaoAtualizada)
       setEdicaoAberta(false)
     }else{
-      postRegistrations(inscricao);
+      const novaInscricao = await postRegistrations(inscricao);
+      inscricoes.push(novaInscricao)
     }
     
     setNovaInscricao(inscricaoVazia);
@@ -127,6 +151,7 @@ function InscricaoPage() {
                     <td className="py-2.5 pr-5 text-right text-warn">{inscricao.estado}</td>
                     <td className="py-2.5 pr-5 text-right text-warn">{inscricao.endereco}</td>
                     <td className="py-2.5 pr-5 text-right">
+                      {inscricao.estado ==="pending"&& (<>
                                         <button
                                           type="button"
                                           onClick={() =>{
@@ -138,7 +163,7 @@ function InscricaoPage() {
                                               dataNascimento: inscricao.dataNascimento,
                                               encarregado: inscricao.encarregado,
                                               contacto: inscricao.contacto,
-                                              classe: inscricao.classePretendida,
+                                              classe: inscricao.classId.toString(),
                                             });                                            
                                             setFormularioAberto(true)
                                             setEdicaoAberta(true)
@@ -150,9 +175,13 @@ function InscricaoPage() {
                                         </button>
                                           <button
                                             type="button"
-                                            onClick={() => (
-                                             inscricao.id && updateRegistrationStatus({ id: inscricao.id, status: RegistrationStatus.APPROVED })
-                                            )}
+                                            onClick={() =>{
+                                              console.log("Aprovando inscrição:", inscricao.id);
+                                               (
+                                               inscricao.id && atualizarStatusInscricao(inscricao, RegistrationStatus.APPROVED)
+                                            )
+                                            }
+                                          }
                                             
                                             className="rounded-md border border-line px-2.5 py-1 text-xs text-pass hover:bg-pass/10 disabled:cursor-not-allowed disabled:opacity-40"
                                           >
@@ -160,13 +189,41 @@ function InscricaoPage() {
                                           </button>
                                           <button
                                             type="button"
-                                            onClick={() => (
-                                             inscricao.id && updateRegistrationStatus({ id: inscricao.id, status: RegistrationStatus.REJECTED })
-                                            )}
+                                            onClick={
+                                            () => inscricao.id && atualizarStatusInscricao(inscricao, RegistrationStatus.REJECTED)
+
+                                            }
                                             className="rounded-md border border-line px-2.5 py-1 text-xs text-fail hover:bg-fail/10 disabled:cursor-not-allowed disabled:opacity-40"
                                           >
                                             Rejeitar
                                           </button>
+                      </>)}
+
+                       {inscricao.estado ==="rejected"&& (<>
+                                        <button
+                                          type="button"
+                                          onClick={() =>{
+                                            setNovaInscricao( {
+                                              id: inscricao.id,
+                                              nome: inscricao.candidato,
+                                              bi: inscricao.bi,
+                                              endereco: inscricao.endereco,
+                                              dataNascimento: inscricao.dataNascimento,
+                                              encarregado: inscricao.encarregado,
+                                              contacto: inscricao.contacto,
+                                              classe: inscricao.classId.toString(),
+                                            });                                            
+                                            setFormularioAberto(true)
+                                            setEdicaoAberta(true)
+                                          } 
+                                        }
+                                          className="rounded-md border border-line px-2.5 py-1 text-xs text-warn hover:bg-warn/10 disabled:cursor-not-allowed disabled:opacity-40"
+                                        >
+                                          Editar
+                                        </button>
+                      </>)
+                    }
+                      
                                         </td>
                   </tr>
                 ))}
@@ -271,7 +328,9 @@ function DialogInscricao({
               className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
             >
               {niveis.map((nivel) => (
-                <option key={nivel.id}>{nivel.nome}</option>
+                <option value={nivel.id} key={nivel.id}>
+                  {nivel.nome}
+                </option>
               ))}
             </select>
           </div>

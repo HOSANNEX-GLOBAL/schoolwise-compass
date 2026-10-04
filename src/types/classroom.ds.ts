@@ -1,10 +1,10 @@
 export type Turma = {
+  id: number;
   nome: string;
-  ciclo: string;
-  diretor: string;
+  diretor: string | null;
   alunos: number;
   sala: string;
-  mediaTurma: number;
+  mediaTurma: number | null;
 };
 
 export type TurmaApi = {
@@ -12,18 +12,26 @@ export type TurmaApi = {
   academic_year_id: number;
   capacity: number;
   created_at: string;
-  cycle: string;
   name: string;
   room: string;
-  teacher_id: number;
+  teacher_id: number | null;
   updated_at: string;
-  class_average: number;
   academic_year: {
     id: number;
     name: string;
   };
-  teacher: {
-    id: number;
-    name: string;   
+  class_average: number | null;
+   teacher: {
+     id: number;
+     name: string;   
+ } | null;
 };
-};
+
+// teacher_id: number;
+export type TurmaForm = {
+    id?: number;
+    name: string;
+    room: string;
+    capacity: number;
+    school_level_id: number;
+}
