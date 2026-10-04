@@ -88,6 +88,7 @@ function InscricaoPage() {
       school_level_id: Number(novaInscricao.classe),
     };
 
+    
     if (edicaoAberta) {
       await putRegistrations(inscricao);
     } else {
@@ -111,7 +112,7 @@ function InscricaoPage() {
       genero: inscricao.genero,
       encarregado: inscricao.encarregado,
       contacto: inscricao.contacto,
-      classe: String(inscricao.schoolLevelId),
+      classe: String(inscricao.classId),
     });
     setEdicaoAberta(true);
     setFormularioAberto(true);
@@ -160,7 +161,7 @@ function InscricaoPage() {
                 <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
                   <th scope="col" className="px-5 py-3 text-left font-medium">Candidato</th>
                   <th scope="col" className="px-4 py-3 text-center font-medium">BI</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium">D/Nascimento</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Data de Nascimento</th>
                   <th scope="col" className="px-4 py-3 text-left font-medium">Gênero</th>
                   <th scope="col" className="px-4 py-3 text-left font-medium">Classe pretendida</th>
                   <th scope="col" className="px-4 py-3 text-left font-medium">Encarregado</th>
@@ -181,7 +182,7 @@ function InscricaoPage() {
                       <td className="px-5 py-3 font-medium text-foreground">{inscricao.candidato}</td>
                       <td className="whitespace-nowrap px-4 py-3">{inscricao.bi}</td>
                       <td className="whitespace-nowrap px-4 py-3">{formatarData(inscricao.dataNascimento)}</td>
-                      <td className="px-4 py-3">{inscricao.genero || "—"}</td>
+                      <td className="px-4 py-3">{inscricao.genero}</td>
                       <td className="px-4 py-3">{inscricao.classePretendida}</td>
                       <td className="px-4 py-3">{inscricao.encarregado}</td>
                       <td className="whitespace-nowrap px-4 py-3">{inscricao.contacto}</td>

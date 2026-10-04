@@ -10,24 +10,24 @@ export type RegistrationAPI = {
   guardian_phone: string;
   name: string;
   school_level_id: number;
-  status: null | string;
+  status: string;
   address: string;
   updated_at: string;
   school_level: SchoolLevelAPI;
 };
 
 export type Registration = {
-  id: number;
-  bi: string;
-  dataNascimento: string;
-  genero: string;
-  candidato: string;
-  schoolLevelId: number;
-  classePretendida: string;
-  encarregado: string;
-  contacto: string;
-  endereco: string;
-  estado: null | string;
+    id: number;
+    bi: string;
+    dataNascimento: string;
+    genero: string;
+    candidato: string;
+    classePretendida: string;
+    encarregado: string;
+    contacto: string;
+    endereco: string;
+    estado: string;
+    classId: number;
 }
 
 export type RegistrationForm = {

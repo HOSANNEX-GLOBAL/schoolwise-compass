@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
+import { useQuery } from "@tanstack/react-query";
+import { Enrollment } from "@/types/enrollment.ds";
+import { getEnrollments } from "@/api/enrollment";
 
 const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
 
@@ -47,14 +50,15 @@ function normalizarMatricula(item: Partial<Matricula>): Matricula {
 }
 
 function MatriculaPage() {
-  const [matriculas, setMatriculas] = useState<Matricula[]>([]);
 
-  useEffect(() => {
-    const guardadas = window.localStorage.getItem(MATRICULAS_STORAGE_KEY);
-    if (guardadas) {
-      setMatriculas((JSON.parse(guardadas) as Partial<Matricula>[]).map(normalizarMatricula));
-    }
-  }, []);
+    const { data: matriculas = [] } = useQuery<Enrollment[]>({
+      queryKey: ["enrollments"],
+      queryFn: async () => {
+        return await getEnrollments();
+      },
+    });
+
+
 
   // function gerarNumeroProcesso(alunos: Aluno[]) {
   //   const ano = anoLetivo.slice(0, 4);
@@ -135,15 +139,24 @@ function MatriculaPage() {
               </thead>
               <tbody className="text-mut">
                 {matriculas.map((matricula) => (
+
+                  // <td>{matricula.studentNumber}</td>
+                  // <td>{matricula.studentName}</td>
+                  // <td>{matricula.schoolLevelName}</td>
+                  // <td>{matricula.classroomName}</td>
+                  // <td>{matricula.academicYearName}</td>
+                  // <td>{matricula.status}</td>
+
+
                   <tr
                     key={matricula.id}
                     className="border-b border-line/60 last:border-0 hover:bg-surface"
                   >
-                    <td className="py-2.5 px-3 text-brand">{matricula.numeroProcesso}</td>
-                    <td className="py-2.5 text-foreground">{matricula.nome}</td>
-                    <td className="py-2.5">{matricula.turma}</td>
-                    <td className="py-2.5">{matricula.data}</td>
-                    <td className="py-2.5 text-pass">{matricula.estado}</td>
+                    <td className="py-2.5 px-3 text-brand">{matricula.studentNumber}</td>
+                    <td className="py-2.5 text-foreground">{matricula.studentName}</td>
+                    <td className="py-2.5">{matricula.classroomName}</td>
+                    <td className="py-2.5">{matricula.academicYearName}</td>
+                    <td className="py-2.5 text-pass">{matricula.status}</td>
                   </tr>
                 ))}
                 {matriculas.length === 0 && (
