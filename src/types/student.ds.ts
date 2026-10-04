@@ -24,15 +24,9 @@ export type Aluno = {
   nome: string;
   turma: string;
   encarregado: string;
-<<<<<<< HEAD
   encarregado_tel: string;
   bi?: string;
   endereco?: string;
   dataNascimento?: string;
   media?: number;
 };
-=======
-//   media: number;
-//   // notas: { t1: number; t2: number; t3: number };
-};
->>>>>>> 1af226cd3c0cf479cb1e2b47994b5c8290cba624

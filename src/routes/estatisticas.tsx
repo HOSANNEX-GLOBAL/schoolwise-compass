@@ -26,9 +26,13 @@ function EstatisticasPage() {
   const aprovados = alunos.filter(
     (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Aprovado",
   ).length;
-  const recursos = alunos.filter(
-    (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Recurso",
-  ).length;
+
+  const recursos =0; //esforçando ....
+  
+  //  alunos.filter(
+  //   (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Recurso",
+  // ).length;
+  
   const reprovados = alunos.filter(
     (a) => estado(media(a.notas), maxNotaDaTurma(a.turma)) === "Reprovado",
   ).length;

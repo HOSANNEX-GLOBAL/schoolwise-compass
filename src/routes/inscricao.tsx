@@ -1,36 +1,57 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
-import { Check, X } from "lucide-react";
+import { useState, type FormEvent } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSchoolLevels } from "@/api/schoollevel";
 import { SchoolLevel } from "@/types/schoollevel.ds";
-import { getRegistrations } from "@/api/registration";
-import { Registration } from "@/types/registration.ds";
+import { getRegistrations, postRegistrations, putRegistrations, updateRegistrationStatus } from "@/api/registration";
+import { Registration, RegistrationForm, RegistrationStatus } from "@/types/registration.ds";
 
-type Inscricao = {
-  id: string;
+type InscricaoForm = {
+  id: number | null;
   nome: string;
   bi: string;
   endereco: string;
   dataNascimento: string;
+  genero: string;
   encarregado: string;
   contacto: string;
   classe: string;
-  estado: "Pendente" | "Aprovada" | "Convertida";
 };
 
-const STORAGE_KEY = "schoolwise:inscricoes:v1";
-const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
-const inscricaoVazia = {
+const inscricaoVazia: InscricaoForm = {
+  id: null,
   nome: "",
   bi: "",
   endereco: "",
   dataNascimento: "",
-  classe: "",
+  genero: "",
   encarregado: "",
   contacto: "",
+  classe: "",
 };
+
+function formatarData(data: string) {
+  if (!data) return "—";
+  const [ano, mes, dia] = data.slice(0, 10).split("-");
+  return ano && mes && dia ? `${dia}/${mes}/${ano}` : data;
+}
+
+function formatarEstado(estado: Registration["estado"]) {
+  switch ((estado ?? "pending").toLowerCase()) {
+    case "0":
+    case "pending":
+      return "Pendente";
+    case "1":
+    case "approved":
+      return "Aprovada";
+    case "2":
+    case "rejected":
+      return "Rejeitada";
+    default:
+      return estado ?? "Pendente";
+  }
+}
 
 export const Route = createFileRoute("/inscricao")({
   head: () => ({
@@ -43,38 +64,68 @@ export const Route = createFileRoute("/inscricao")({
 });
 
 function InscricaoPage() {
+  const queryClient = useQueryClient();
   const [formularioAberto, setFormularioAberto] = useState(false);
-  const [novaInscricao, setNovaInscricao] = useState(inscricaoVazia);
-  const [mensagem, setMensagem] = useState("");
+  const [novaInscricao, setNovaInscricao] = useState<InscricaoForm>(inscricaoVazia);
+  const [edicaoAberta, setEdicaoAberta] = useState(false);
 
-  const { data: inscricoesApi = [] } = useQuery<Registration[]>({
+  const { data: inscricoes = [] } = useQuery<Registration[]>({
     queryKey: ["registrations"],
     queryFn: getRegistrations,
   });
-  const [inscricoes, setInscricoes] = useState<Registration[]>([]);
 
-  useEffect(() => {
-    setInscricoes([...inscricoesApi]);
-  }, [inscricoesApi]);
-
-  function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
+  async function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const inscricao: Registration = {
-      id: Date.now(),
+    const inscricao: RegistrationForm = {
+      id: novaInscricao.id,
+      name: novaInscricao.nome.trim(),
       bi: novaInscricao.bi.trim(),
-      candidato: novaInscricao.nome.trim(),
-      dataNascimento: novaInscricao.dataNascimento,
-      classePretendida: novaInscricao.classe,
-      encarregado: novaInscricao.encarregado.trim(),
-      contacto: novaInscricao.contacto.trim(),
-      endereco: novaInscricao.endereco.trim(),
-      estado: "Pendente",
+      date_of_birth: novaInscricao.dataNascimento,
+      genus: novaInscricao.genero.trim(),
+      guardian: novaInscricao.encarregado.trim(),
+      guardian_phone: novaInscricao.contacto.trim(),
+      address: novaInscricao.endereco.trim(),
+      school_level_id: Number(novaInscricao.classe),
     };
-    const lista = [inscricao, ...inscricoes];
-    setInscricoes(lista);
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lista));
+
+    if (edicaoAberta) {
+      await putRegistrations(inscricao);
+    } else {
+      const { id: _id, ...dadosInscricao } = inscricao;
+      await postRegistrations(dadosInscricao);
+    }
+
+    await queryClient.invalidateQueries({ queryKey: ["registrations"] });
     setNovaInscricao(inscricaoVazia);
+    setEdicaoAberta(false);
     setFormularioAberto(false);
+  }
+
+  function abrirEdicao(inscricao: Registration) {
+    setNovaInscricao({
+      id: inscricao.id,
+      nome: inscricao.candidato,
+      bi: inscricao.bi,
+      endereco: inscricao.endereco,
+      dataNascimento: inscricao.dataNascimento.slice(0, 10),
+      genero: inscricao.genero,
+      encarregado: inscricao.encarregado,
+      contacto: inscricao.contacto,
+      classe: String(inscricao.schoolLevelId),
+    });
+    setEdicaoAberta(true);
+    setFormularioAberto(true);
+  }
+
+  async function alterarEstado(id: number, status: number) {
+    await updateRegistrationStatus({ id, status });
+    await queryClient.invalidateQueries({ queryKey: ["registrations"] });
+  }
+
+  function fecharFormulario() {
+    setFormularioAberto(false);
+    setEdicaoAberta(false);
+    setNovaInscricao(inscricaoVazia);
   }
 
   return (
@@ -85,7 +136,11 @@ function InscricaoPage() {
         action={
           <button
             type="button"
-            onClick={() => setFormularioAberto(true)}
+            onClick={() => {
+              setEdicaoAberta(false);
+              setNovaInscricao(inscricaoVazia);
+              setFormularioAberto(true);
+            }}
             className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
           >
             + Nova inscrição
@@ -93,65 +148,78 @@ function InscricaoPage() {
         }
       />
 
-      <section className="px-8">
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-line flex items-center justify-between">
+      <section className="px-4 sm:px-8">
+        <div className="glass overflow-hidden rounded-xl">
+          <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <h2 className="text-sm font-semibold">Candidaturas registadas</h2>
             <span className="text-[11px] text-mut">{inscricoes.length} inscrições</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[760px]">
+            <table className="w-full min-w-[1460px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Candidato</th>
-                  <th className="text-left font-medium py-2.5 pe-5">Classe pretendida</th>
-                  <th className="text-left font-medium py-2.5 pe-5">Encarregado</th>
-                  <th className="text-left font-medium py-2.5">Contacto</th>
-                  <th className="text-right font-medium py-2.5 pr-5">Estado</th>
-                  <th className="text-right font-medium py-2.5 pr-5">Decisão</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Candidato</th>
+                  <th scope="col" className="px-4 py-3 text-center font-medium">BI</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">D/Nascimento</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Gênero</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Classe pretendida</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Encarregado</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Contacto</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Endereço</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Estado</th>
+                  <th scope="col" className="px-5 py-3 text-center font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
-                {inscricoes.map((inscricao) => (
-                  <tr
-                    key={inscricao.id}
-                    className="border-b border-line/60 last:border-0 hover:bg-surface"
-                  >
-                    <td className="py-2.5 px-5 text-foreground">{inscricao.candidato}</td>
-                    <td className="py-2.5">{inscricao.classePretendida}</td>
-                    <td className="py-2.5">{inscricao.encarregado}</td>
-                    <td className="py-2.5">{inscricao.contacto}</td>
-                    <td className="py-2.5 text-right text-warn">{inscricao.estado}</td>
-                    <td className="py-2.5 pr-5 text-right">
-                      {/* Abaixo esta o botão de aprovação da inscrição */}
-                      {inscricao.estado === "pending" && (
-                        <span className="inline-flex gap-2">
+                {inscricoes.map((inscricao) => {
+                  const estado = formatarEstado(inscricao.estado);
+                  return (
+                    <tr
+                      key={inscricao.id}
+                      className="border-b border-line/60 last:border-0 hover:bg-surface/60"
+                    >
+                      <td className="px-5 py-3 font-medium text-foreground">{inscricao.candidato}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{inscricao.bi}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{formatarData(inscricao.dataNascimento)}</td>
+                      <td className="px-4 py-3">{inscricao.genero || "—"}</td>
+                      <td className="px-4 py-3">{inscricao.classePretendida}</td>
+                      <td className="px-4 py-3">{inscricao.encarregado}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{inscricao.contacto}</td>
+                      <td className="max-w-48 truncate px-4 py-3" title={inscricao.endereco}>
+                        {inscricao.endereco || "—"}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3">{estado}</td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-1.5">
                           <button
                             type="button"
-                            title="Aprovar inscrição"
-                            aria-label={`Aprovar ${inscricao.candidato}`}
-                            className="rounded-md p-1.5  text-pass ring-2 ring-pass/40 hover:bg-pass/10"
+                            onClick={() => abrirEdicao(inscricao)}
+                            className="rounded-md border border-line px-2.5 py-1 text-xs text-warn hover:bg-warn/10"
                           >
-                            <Check size={15} />
+                            Editar
                           </button>
-                          {/* Abaixo esta o botão de recusação da inscrição */}
                           <button
                             type="button"
-                            title="Recusar inscrição"
-                            aria-label={`Recusar ${inscricao.candidato}`}
-                            className="rounded-md p-1.5 text-warn ring-2 ring-warn/40 hover:bg-warn/10"
+                            onClick={() => void alterarEstado(inscricao.id, RegistrationStatus.APPROVED)}
+                            className="rounded-md border border-line px-2.5 py-1 text-xs text-pass hover:bg-pass/10"
                           >
-                            <X size={15} />
+                            Aprovar
                           </button>
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-
+                          <button
+                            type="button"
+                            onClick={() => void alterarEstado(inscricao.id, RegistrationStatus.REJECTED)}
+                            className="rounded-md border border-line px-2.5 py-1 text-xs text-fail hover:bg-fail/10"
+                          >
+                            Rejeitar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
                 {inscricoes.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="py-10 text-center text-mut">
+                    <td colSpan={10} className="py-10 text-center text-mut">
                       Nenhuma inscrição registada.
                     </td>
                   </tr>
@@ -162,17 +230,12 @@ function InscricaoPage() {
         </div>
       </section>
 
-      {mensagem && (
-        <p className="mx-8 mt-4 rounded-md border border-pass/30 bg-pass/10 px-4 py-3 text-sm text-pass">
-          {mensagem}
-        </p>
-      )}
-
       <DialogInscricao
         aberto={formularioAberto}
+        emEdicao={edicaoAberta}
         valor={novaInscricao}
         onChange={setNovaInscricao}
-        onClose={() => setFormularioAberto(false)}
+        onClose={fecharFormulario}
         onSubmit={adicionarInscricao}
       />
     </AppShell>
@@ -181,83 +244,103 @@ function InscricaoPage() {
 
 function DialogInscricao({
   aberto,
+  emEdicao,
   valor,
   onChange,
   onClose,
   onSubmit,
 }: {
   aberto: boolean;
-  valor: typeof inscricaoVazia;
-  onChange: (valor: typeof inscricaoVazia) => void;
+  emEdicao: boolean;
+  valor: InscricaoForm;
+  onChange: (valor: InscricaoForm) => void;
   onClose: () => void;
-  onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }) {
+
   const { data: niveis = [] } = useQuery<SchoolLevel[]>({
     queryKey: ["school-levels"],
-    queryFn: async () => {
-      return await getSchoolLevels();
-    },
+    queryFn: getSchoolLevels,
   });
 
   if (!aberto) return null;
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-4">
-      <div className="glass w-full max-w-lg rounded-xl p-6">
-        <h2 className="text-lg font-semibold">Nova inscrição</h2>
-        <p className="text-sm text-mut mt-1">Registe a candidatura para análise da secretaria.</p>
-        <form onSubmit={onSubmit} className="grid gap-4 mt-5">
-          <input
-            required
-            value={valor.nome}
-            onChange={(event) => onChange({ ...valor, nome: event.target.value })}
-            placeholder="Nome completo"
-            className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
-          />
-          <div className="grid grid-cols-2 gap-3">
+    <div className="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/80 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="inscricao-dialog-title"
+        className="glass my-auto w-full max-w-2xl rounded-xl p-6"
+      >
+        <h2 id="inscricao-dialog-title" className="text-lg font-semibold">
+          {emEdicao ? "Editar inscrição" : "Nova inscrição"}
+        </h2>
+        <p className="mt-1 text-sm text-mut">Registe os dados do candidato para análise da secretaria.</p>
+        <form onSubmit={onSubmit} className="mt-5 grid gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <input
+              required
+              value={valor.nome}
+              onChange={(event) => onChange({ ...valor, nome: event.target.value })}
+              placeholder="Nome completo"
+              aria-label="Nome completo"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
+            />
+            <select
+              required
+              value={valor.genero}
+              onChange={(event) => onChange({ ...valor, genero: event.target.value })}
+              aria-label="Género"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
+            >
+              <option value="">Selecione o género</option>
+              <option value="Masculino">Masculino</option>
+              <option value="Feminino">Feminino</option>
+            </select>
             <input
               required
               value={valor.bi}
               onChange={(event) => onChange({ ...valor, bi: event.target.value })}
               placeholder="BI / Cédula"
-              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+              aria-label="BI ou cédula"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
             />
-            <input
-              required
-              value={valor.endereco}
-              onChange={(event) => onChange({ ...valor, endereco: event.target.value })}
-              placeholder="Endereço"
-              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
             <input
               required
               type="date"
               value={valor.dataNascimento}
               onChange={(event) => onChange({ ...valor, dataNascimento: event.target.value })}
-              placeholder="Data de nascimento"
-              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+              aria-label="Data de nascimento"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
             />
             <select
+              required
               value={valor.classe}
-              onChange={(event) =>
-                onChange({ ...valor, classe: event.target.value as typeof valor.classe })
-              }
-              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+              onChange={(event) => onChange({ ...valor, classe: event.target.value })}
+              aria-label="Classe pretendida"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
             >
+              <option value="">Selecione a classe pretendida</option>
               {niveis.map((nivel) => (
-                <option key={nivel.id}>{nivel.nome}</option>
+                <option key={nivel.id} value={nivel.id}>{nivel.nome}</option>
               ))}
             </select>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
+            <input
+              required
+              value={valor.endereco}
+              onChange={(event) => onChange({ ...valor, endereco: event.target.value })}
+              placeholder="Endereço"
+              aria-label="Endereço"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
+            />
             <input
               required
               value={valor.encarregado}
               onChange={(event) => onChange({ ...valor, encarregado: event.target.value })}
               placeholder="Nome do encarregado"
-              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+              aria-label="Nome do encarregado"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
             />
             <input
               required
@@ -265,22 +348,23 @@ function DialogInscricao({
               value={valor.contacto}
               onChange={(event) => onChange({ ...valor, contacto: event.target.value })}
               placeholder="Contacto do encarregado"
-              className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
+              aria-label="Contacto do encarregado"
+              className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
             />
           </div>
           <div className="flex justify-end gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="text-sm px-3 py-2 rounded-md ring-1 ring-white/10"
+              className="rounded-md px-3 py-2 text-sm ring-1 ring-white/10"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="bg-accent text-accent-foreground text-sm font-semibold px-3 py-2 rounded-md"
+              className="rounded-md bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground"
             >
-              Guardar inscrição
+              {emEdicao ? "Guardar alterações" : "Guardar inscrição"}
             </button>
           </div>
         </form>
