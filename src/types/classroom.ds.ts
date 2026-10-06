@@ -35,3 +35,4 @@ export type TurmaForm = {
     capacity: number;
     school_level_id: number;
 }
+                                                      
