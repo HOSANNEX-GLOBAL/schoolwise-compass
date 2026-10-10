@@ -102,9 +102,9 @@ function AlunosPage() {
        
       />
 
-      <section className="px-8">
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 flex flex-wrap items-center gap-2 border-b border-line">
+      <section className="px-4 sm:px-8">
+        <div className="glass overflow-hidden rounded-xl border border-white/5">
+          <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-4">
             <input
               value={pesquisa}
               onChange={(e) => setPesquisa(e.target.value)}
@@ -140,28 +140,27 @@ function AlunosPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[720px]">
+            <table className="w-full min-w-[820px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Nº</th>
-                  <th className="text-left font-medium py-2.5">Nome</th>
-                  <th className="text-left font-medium py-2.5">Turma</th>
-                  <th className="text-left font-medium py-2.5 pe-5 text-right">Encarregado</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Nº</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Nome</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Turma</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Encarregado</th>
+                  <th scope="col" className="px-5 py-3 text-center font-medium">Estado</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
                 {lista.map((a) => (
                   <tr
                     key={a.numero}
-                    className="border-b border-line/60 last:border-0 hover:bg-surface"
+                    className="border-b border-line/60 last:border-0 hover:bg-surface/60"
                   >
-                    <td className="py-2.5 px-5">{a.numero}</td>
-                    <td className="py-2.5 text-foreground">{a.nome}</td>
-                    <td className="py-2.5">{a.turma}</td>
-           
-                    <td className="py-2.5 pe-5 text-right">{a.encarregado}</td>
-                  
-                    <td className="py-3.5 pr-5 px-5 text-center">
+                    <td className="px-5 py-3">{a.numero}</td>
+                    <td className="px-4 py-3 text-foreground">{a.nome}</td>
+                    <td className="px-4 py-3">{a.turma}</td>
+                    <td className="px-4 py-3">{a.encarregado}</td>
+                    <td className="px-5 py-3 text-center">
                       <EstadoBadge estado={estado(a.media ?? 0, maxNotaDaTurma(a.turma))} />
                     </td>
                   </tr>

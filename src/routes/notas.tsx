@@ -16,7 +16,11 @@ import {
   type Alteracao,
   type Disciplina,
   type Turma,
+  anoLetivo,
 } from "@/lib/school-data";
+import { getSchoolLevels } from "@/api/schoollevel";
+import { SchoolLevel } from "@/types/schoollevel.ds";
+import { useQuery } from "@tanstack/react-query";
 
 const ALUNOS_STORAGE_KEY = "schoolwise:alunos:v1";
 const DISCIPLINAS_STORAGE_KEY = "schoolwise:disciplinas:v1";
@@ -51,6 +55,7 @@ function NotasPage() {
   const [turmas, setTurmas] = useState<Turma[]>(turmasIniciais);
   const [disciplina, setDisciplina] = useState(disciplinasIniciais[0]!.nome);
   const [turma, setTurma] = useState(turmasIniciais[0]!.nome);
+  const [nivelAcademicoId, setNivelAcademicoId] = useState("");
   const [historico, setHistorico] = useState<Alteracao[]>([]);
   const [linhas, setLinhas] = useState<Linha[]>(() =>
     alunosIniciais.map((a) => ({
@@ -193,6 +198,16 @@ function NotasPage() {
     setLinhas((prev) => prev.map((l) => (l.numero === numero ? { ...l, [campo]: valor } : l)));
   };
 
+  
+  const {
+    data: niveis = [],
+    isLoading: niveisLoading,
+    isError: niveisError,
+    error: erroNiveis,
+  } = useQuery<SchoolLevel[]>({
+    queryKey: ["school-levels"],
+    queryFn: getSchoolLevels,
+  });
   return (
     <AppShell>
       <PageHeader
@@ -212,9 +227,32 @@ function NotasPage() {
       <section className="px-8 grid grid-cols-1 xl:grid-cols-12 gap-4">
         <div className="xl:col-span-8 glass rounded-xl p-5">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-            <h2 className="text-sm font-semibold">Grelha de notas · Trimestre</h2>
+            <h2 className="text-sm font-semibold">Grelha de notas - {anoLetivo} </h2>
             <div className="flex flex-wrap items-center gap-2">
-              <select
+                <select
+                  value={nivelAcademicoId}
+                  onChange={(event) => setNivelAcademicoId(event.target.value)}
+                  aria-label="Nível académico"
+                  disabled={niveisLoading || niveisError || niveis.length === 0}
+                  className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-1.5 text-xs focus:outline-none disabled:opacity-50"
+                >
+                  <option value="">
+                    {niveisLoading
+                      ? "A carregar níveis..."
+                      : niveisError
+                        ? "Erro ao carregar níveis"
+                        : niveis.length === 0
+                          ? "Sem níveis disponíveis"
+                          : "Selecione a classe"}
+                  </option>
+                  {niveis.map((nivel) => (
+                    <option key={nivel.id} value={nivel.id} className="bg-ink2">
+                      {nivel.nome}
+                    </option>
+                  ))}
+                </select>
+                              
+              {/* <select
                 value={turma}
                 onChange={(e) => {
                   const proxima = e.target.value;
@@ -236,7 +274,7 @@ function NotasPage() {
                     {t.nome}
                   </option>
                 ))}
-              </select>
+              </select> */}
               <select
                 value={disciplina}
                 onChange={(e) => {
@@ -265,15 +303,15 @@ function NotasPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-155 text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2">Aluno</th>
-                  <th className="text-center font-medium py-2">T1</th>
-                  <th className="text-center font-medium py-2">T2</th>
-                  <th className="text-center font-medium py-2">T3</th>
-                  <th className="text-center font-medium py-2">Média</th>
-                  <th className="text-right font-medium py-2">Estado</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Aluno</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">T1</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">T2</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">T3</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">Média</th>
+                  <th scope="col" className="px-5 py-3 text-right font-medium">Estado</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
@@ -282,10 +320,10 @@ function NotasPage() {
                   const maxNota = maxNotaDaTurma(l.turma);
                   const e = estado(m, maxNota);
                   return (
-                    <tr key={l.numero} className="border-b border-line/60 last:border-0">
-                      <td className="py-2 text-foreground">{l.nome}</td>
+                    <tr key={l.numero} className="border-b border-line/60 last:border-0 hover:bg-surface/60">
+                      <td className="px-5 py-3 text-foreground">{l.nome}</td>
                       {(["t1", "t2", "t3"] as const).map((c) => (
-                        <td key={c} className="py-2 text-center">
+                        <td key={c} className="px-3 py-3 text-center">
                           <input
                             inputMode="numeric"
                             aria-label={`${c.toUpperCase()} de ${l.nome}`}
@@ -296,7 +334,7 @@ function NotasPage() {
                           />
                         </td>
                       ))}
-                      <td className="py-2 text-center">
+                      <td className="px-3 py-3 text-center">
                         <span
                           className={`font-semibold ${
                             e === "Aprovado"
@@ -309,7 +347,7 @@ function NotasPage() {
                           {fmt(m)} /{maxNota}
                         </span>
                       </td>
-                      <td className="py-2 text-right">
+                      <td className="px-5 py-3 text-right">
                         <EstadoBadge estado={e} />
                       </td>
                     </tr>

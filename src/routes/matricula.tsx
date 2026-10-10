@@ -1,27 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
 import { AppShell, PageHeader } from "@/components/AppShell";
-import { useQuery } from "@tanstack/react-query";
-import { Enrollment } from "@/types/enrollment.ds";
-import { getEnrollments } from "@/api/enrollment";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Enrollment, EnrollmentStatus } from "@/types/enrollment.ds";
+import { getEnrollments, updateEnrollmentStatus } from "@/api/enrollment";
 
-const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
 
-type Matricula = {
-  id: number | string;
-  numeroProcesso: string;
-  nome: string;
-  bi: string | undefined;
-  dataNascimento: string | undefined;
-  endereco: string | undefined;
-  turma: string;
-  encarregado: string;
-  contactoEncarregado: string | undefined;
-  data: string;
-  estado: string;
-  // pagamento: "Pendente" | "Confirmado";
-  // contrato: "Pendente" | "Assinado";
-};
+
+function formatarEstado(estado: Enrollment["status"] | number | string | null | undefined) {
+  const valor = String(estado ?? "pending").toLowerCase();
+
+  switch (valor) {
+    case "0":
+    case "pending":
+      return "Pendente";
+    case "1":
+    case "approved":
+      return "Aprovada";
+    case "2":
+    case "rejected":
+      return "Rejeitada";
+    default:
+      return "Pendente";
+  }
+}
+
+function formatarData(data?: Date | string | null) {
+  if (!data) return "—";
+
+  const dataObj = data instanceof Date ? data : new Date(data);
+
+  if (Number.isNaN(dataObj.getTime())) {
+    return "—";
+  }
+
+  return dataObj.toLocaleDateString("pt-PT");
+}
 
 export const Route = createFileRoute("/matricula")({
   head: () => ({
@@ -32,31 +45,12 @@ export const Route = createFileRoute("/matricula")({
   }),
   component: MatriculaPage,
 });
-
-function normalizarMatricula(item: Partial<Matricula>): Matricula {
-  return {
-    id: item.id ?? crypto.randomUUID(),
-    numeroProcesso: item.numeroProcesso ?? "",
-    nome: item.nome ?? "",
-    bi: item.bi,
-    dataNascimento: item.dataNascimento,
-    endereco: item.endereco,
-    turma: item.turma ?? "",
-    encarregado: item.encarregado ?? "",
-    contactoEncarregado: item.contactoEncarregado,
-    data: item.data ?? "",
-    estado: item.estado ?? "Aprovada",
-  };
-}
-
 function MatriculaPage() {
-
-    const { data: matriculas = [] } = useQuery<Enrollment[]>({
-      queryKey: ["enrollments"],
-      queryFn: async () => {
-        return await getEnrollments();
-      },
-    });
+  const queryClient = useQueryClient();
+  const { data: matriculas = [] } = useQuery<Enrollment[]>({
+    queryKey: ["enrollments"],
+    queryFn: getEnrollments,
+  });
 
 
 
@@ -104,65 +98,94 @@ function MatriculaPage() {
   //   setFormularioAberto(false);
   // }
 
+  async function alterarEstado(id: number, status: number) {
+    await updateEnrollmentStatus({ id, status });
+    await queryClient.invalidateQueries({ queryKey: ["enrollments"] });
+  }
+
   return (
     <AppShell>
       <PageHeader
         eyebrow="Admissões"
         title="Matrículas"
-        // action={
-        //   <button
-        //     type="button"
-        //     onClick={() => setFormularioAberto(true)}
-        //     className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
-        //   >
-        //     + Nova matrícula
-        //   </button>
-        // }
       />
 
-      <section className="px-8">
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-line flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Matrículas aprovadas</h2>
+      <section className="px-4 sm:px-8">
+        <div className="glass overflow-hidden rounded-xl">
+          <div className="flex items-center justify-between border-b border-line px-5 py-4">
+            <h2 className="text-sm font-semibold">Matrículas registadas</h2>
             <span className="text-[11px] text-mut">{matriculas.length} matrículas</span>
           </div>
+
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[980px]">
+            <table className="w-full min-w-[1460px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Processo</th>
-                  <th className="text-left font-medium py-2.5 px-4">Aluno</th>
-                  <th className="text-left font-medium py-2.5">Turma</th>
-                  <th className="text-left font-medium py-2.5 px-5">Data</th>
-                  <th className="text-left font-medium py-2.5 px-2">Estado</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">
+                    Processo
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">
+                    Aluno
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-center font-medium">BI</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Dat. matrícula</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Endereço</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Encarregado</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Contacto</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Classe pretendida</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium px-5">Ano lectivo</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Estado</th>
+                  <th scope="col" className="px-5 py-3 text-center font-medium">Ações</th>
                 </tr>
               </thead>
+
               <tbody className="text-mut">
-                {matriculas.map((matricula) => (
+                {matriculas.map((matricula) => {
+                  const estado = formatarEstado(matricula.status);
 
-                  // <td>{matricula.studentNumber}</td>
-                  // <td>{matricula.studentName}</td>
-                  // <td>{matricula.schoolLevelName}</td>
-                  // <td>{matricula.classroomName}</td>
-                  // <td>{matricula.academicYearName}</td>
-                  // <td>{matricula.status}</td>
+                  return (
+                    <tr
+                      key={matricula.id}
+                      className="border-b border-line/60 last:border-0 hover:bg-surface/60"
+                    >
+                      <td className="px-5 py-3 font-medium text-foreground">{matricula.studentNumber}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{matricula.studentName}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{matricula.bi}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{formatarData(matricula.createdAt)}</td>
+                      <td className="max-w-56 truncate px-4 py-3" title={matricula.address}>
+                        {matricula.address || "—"}
+                      </td>
+                      <td className="px-4 py-3">{matricula.guardian}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{matricula.guardianPhone || "—"}</td>
+                      <td className="px-4 py-3">{matricula.schoolLevelName}</td>
+                      <td className="px-4 py-3">{matricula.academicYearName}</td>
+                      <td className="whitespace-nowrap px-4 py-3">{estado}</td>
+                      <td className="px-5 py-3">
+                        <div className="flex justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => void alterarEstado(matricula.id, EnrollmentStatus.APPROVED)}
+                            className="rounded-md border border-line px-2.5 py-1 text-xs text-pass hover:bg-pass/10"
+                          >
+                            Aprovar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void alterarEstado(matricula.id, EnrollmentStatus.REJECTED)}
+                            className="rounded-md border border-line px-2.5 py-1 text-xs text-fail hover:bg-fail/10"
+                          >
+                            Rejeitar
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
 
-
-                  <tr
-                    key={matricula.id}
-                    className="border-b border-line/60 last:border-0 hover:bg-surface"
-                  >
-                    <td className="py-2.5 px-3 text-brand">{matricula.studentNumber}</td>
-                    <td className="py-2.5 text-foreground">{matricula.studentName}</td>
-                    <td className="py-2.5">{matricula.classroomName}</td>
-                    <td className="py-2.5">{matricula.academicYearName}</td>
-                    <td className="py-2.5 text-pass">{matricula.status}</td>
-                  </tr>
-                ))}
                 {matriculas.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-mut">
-                      Nenhuma matrícula aprovada pendente.
+                    <td colSpan={11} className="py-10 text-center text-mut">
+                      Nenhuma matrícula registada.
                     </td>
                   </tr>
                 )}

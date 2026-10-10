@@ -155,7 +155,7 @@ function ProfessoresPage() {
 
       <section className="px-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {professores.map((p) => (
-          <article key={p.nome} className="glass clip p-5">
+          <article key={p.nome} className="glass clip border border-white/5 p-5 shadow-sm shadow-black/5">
             <div className="size-10 rounded-lg bg-brand/20 ring-1 ring-brand/30 grid place-items-center text-brand font-semibold">
               {p.nome
                 .split(" ")
@@ -185,9 +185,9 @@ function ProfessoresPage() {
         ))}
       </section>
 
-      <section className="px-8 mt-8">
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-line flex items-center justify-between">
+      <section className="px-4 sm:px-8 mt-8">
+        <div className="glass overflow-hidden rounded-xl border border-white/5">
+          <div className="flex items-center justify-between border-b border-line px-5 py-4">
             <div>
               <h2 className="text-sm font-semibold">Utilizadores do sistema</h2>
               <p className="text-[11px] text-mut mt-1">
@@ -197,26 +197,26 @@ function ProfessoresPage() {
             <span className="text-[11px] text-mut">{utilizadores.length} contas</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-180 text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Utilizador</th>
-                  <th className="text-left font-medium py-2.5">E-mail</th>
-                  <th className="text-left font-medium py-2.5">Perfil</th>
-                  <th className="text-left font-medium py-2.5">Estado</th>
-                  <th className="text-right font-medium py-2.5 pr-5">Ação</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Utilizador</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">E-mail</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Perfil</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Estado</th>
+                  <th scope="col" className="px-5 py-3 text-right font-medium">Ação</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
                 {utilizadores.map((user) => (
-                  <tr key={user.id} className="border-b border-line/60 last:border-0">
-                    <td className="py-2.5 px-5 text-foreground">{user.nome}</td>
-                    <td className="py-2.5">{user.email}</td>
-                    <td className="py-2.5">{getRoleLabel(user.cargo)}</td>
-                    <td className={`py-2.5 ${user.ativo ? "text-pass" : "text-warn"}`}>
+                  <tr key={user.id} className="border-b border-line/60 last:border-0 hover:bg-surface/60">
+                    <td className="px-5 py-3 text-foreground">{user.nome}</td>
+                    <td className="px-4 py-3">{user.email}</td>
+                    <td className="px-4 py-3">{getRoleLabel(user.cargo)}</td>
+                    <td className={`px-4 py-3 ${user.ativo ? "text-pass" : "text-warn"}`}>
                       {user.ativo ? "Ativo" : "Inativo"}
                     </td>
-                    <td className="py-2.5 pr-5 text-right">
+                    <td className="px-5 py-3 text-right">
                       <button
                         type="button"
                         disabled={user.id === readSession()?.id}

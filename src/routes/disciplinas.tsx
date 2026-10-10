@@ -114,30 +114,30 @@ function DisciplinasPage() {
         }
       />
 
-      <section className="px-8">
-        <div className="glass rounded-xl overflow-hidden">
+      <section className="px-4 sm:px-8">
+        <div className="glass overflow-hidden rounded-xl border border-white/5">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-170">
+            <table className="w-full min-w-[900px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Código</th>
-                  <th className="text-left font-medium py-2.5">Disciplina</th>
-                  <th className="text-left font-medium py-2.5">Carga semanal</th>
-                  <th className="text-left font-medium py-2.5">Professor responsável</th>
-                  <th className="text-left font-medium py-2.5 pr-5">Aprovação</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Código</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Disciplina</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Carga semanal</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Professor responsável</th>
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Aprovação</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
                 {disciplinas.map((d) => (
                   <tr
                     key={d.codigo}
-                    className="border-b border-line/60 last:border-0 hover:bg-surface"
+                    className="border-b border-line/60 last:border-0 hover:bg-surface/60"
                   >
-                    <td className="py-2.5 px-5 font-medium text-brand">{d.codigo}</td>
-                    <td className="py-2.5 text-foreground">{d.nome}</td>
-                    <td className="py-2.5">{d.cargaHoraria} h</td>
-                    <td className="py-2.5">{d.professor}</td>
-                    <td className="py-2.5 pr-5">
+                    <td className="px-5 py-3 font-medium text-brand">{d.codigo}</td>
+                    <td className="px-4 py-3 text-foreground">{d.nome}</td>
+                    <td className="px-4 py-3">{d.cargaHoraria} h</td>
+                    <td className="px-4 py-3">{d.professor}</td>
+                    <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="h-1.5 w-28 rounded-full bg-surface-strong">
                           <div

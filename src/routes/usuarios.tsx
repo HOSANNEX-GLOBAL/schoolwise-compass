@@ -94,25 +94,25 @@ function UsuariosPage() {
 
       <section className="px-8 grid gap-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <article className="glass rounded-xl p-5">
+          <article className="glass rounded-xl border border-white/5 p-5 shadow-sm shadow-black/5">
             <p className="text-[11px] uppercase tracking-wider text-mut">Total</p>
             <p className="mt-2 text-3xl font-semibold">{utilizadores.length}</p>
             <p className="mt-1 text-xs text-mut">Contas registadas</p>
           </article>
-          <article className="glass rounded-xl p-5">
+          <article className="glass rounded-xl border border-white/5 p-5 shadow-sm shadow-black/5">
             <p className="text-[11px] uppercase tracking-wider text-mut">Ativos</p>
             <p className="mt-2 text-3xl font-semibold text-pass">{ativos}</p>
             <p className="mt-1 text-xs text-mut">Podem entrar no sistema</p>
           </article>
-          <article className="glass rounded-xl p-5">
+          <article className="glass rounded-xl border border-white/5 p-5 shadow-sm shadow-black/5">
             <p className="text-[11px] uppercase tracking-wider text-mut">Inativos</p>
             <p className="mt-2 text-3xl font-semibold text-warn">{inativos}</p>
             <p className="mt-1 text-xs text-mut">Aguardam reativação ou exclusão</p>
           </article>
         </div>
 
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-line flex flex-wrap items-center gap-2">
+        <div className="glass overflow-hidden rounded-xl border border-white/5">
+          <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-4">
             <input
               value={pesquisa}
               onChange={(event) => setPesquisa(event.target.value)}
@@ -134,14 +134,14 @@ function UsuariosPage() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-220 text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Utilizador</th>
-                  <th className="text-left font-medium py-2.5">E-mail</th>
-                  <th className="text-left font-medium py-2.5">Perfil</th>
-                  <th className="text-left font-medium py-2.5">Estado</th>
-                  <th className="text-right font-medium py-2.5 pr-5">Ações</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Utilizador</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">E-mail</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Perfil</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Estado</th>
+                  <th scope="col" className="px-5 py-3 text-right font-medium">Ações</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
@@ -149,14 +149,14 @@ function UsuariosPage() {
                   const proprioUtilizador = user.id === sessao?.id;
 
                   return (
-                    <tr key={user.id} className="border-b border-line/60 last:border-0">
-                      <td className="py-3 px-5 text-foreground">{user.nome}</td>
-                      <td className="py-3">{user.email}</td>
-                      <td className="py-3">{getRoleLabel(user.cargo)}</td>
-                      <td className={`py-3 ${user.ativo ? "text-pass" : "text-warn"}`}>
+                    <tr key={user.id} className="border-b border-line/60 last:border-0 hover:bg-surface/60">
+                      <td className="px-5 py-3 text-foreground">{user.nome}</td>
+                      <td className="px-4 py-3">{user.email}</td>
+                      <td className="px-4 py-3">{getRoleLabel(user.cargo)}</td>
+                      <td className={`px-4 py-3 ${user.ativo ? "text-pass" : "text-warn"}`}>
                         {user.ativo ? "Ativo" : "Inativo"}
                       </td>
-                      <td className="py-3 pr-5 text-right">
+                      <td className="px-5 py-3 text-right">
                         <div className="flex justify-end gap-2">
                           <button
                             type="button"

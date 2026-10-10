@@ -1,15 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Turma, TurmaApi, TurmaForm } from "@/types/classroom.ds";
+import { Turma, TurmaForm } from "@/types/classroom.ds";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
-
-import {
-  anoLetivo,
-  maxNotaDaTurma,
-} from "@/lib/school-data";
-
+import { anoLetivo } from "@/lib/school-data";
 
 import {
   Dialog,
@@ -20,104 +15,94 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { getClassrooms, postClassRoom, putClassRoom } from "@/api/classrooms";
-import { getSchoolLevels } from "@/api/schoollevel";
-import { SchoolLevel } from "@/types/schoollevel.ds";
+import { getClassrooms } from "@/api/classrooms";
 
 const turmaVazia: {
   id: number;
-  classe: number;
   letra: string;
-  // diretor: string;
   alunos: number;
   sala: string;
 } = {
   id: 0,
-  classe: 0,
   letra: "",
-  // diretor: "",
   alunos: 0,
-  sala: ""
+  sala: "",
 };
 
 export const Route = createFileRoute("/turmas")({
   head: () => ({
     meta: [
-      {
-        title: "Gestão de Turmas — Gestão Académica",
-      },
+      { title: "Gestão de Turmas — Gestão Académica" },
       {
         name: "description",
-        content:
-          "Turmas do ano letivo com diretor de turma, sala, número de alunos e média.",
+        content: "Turmas do ano letivo com diretor de turma, sala, número de alunos e média.",
       },
-      {
-        property: "og:title",
-        content: "Gestão de Turmas — Gestão Académica",
-      },
-      {
-        property: "og:description",
-        content: "Organize turmas, salas e diretores de turma.",
-      },
+      { property: "og:title", content: "Gestão de Turmas — Gestão Académica" },
+      { property: "og:description", content: "Organize turmas, salas e diretores de turma." },
     ],
   }),
-
   component: TurmasPage,
 });
 
 function TurmasPage() {
   const [formularioAberto, setFormularioAberto] = useState(false);
   const [novaTurma, setNovaTurma] = useState(turmaVazia);
-    const [edicaoAberta, setEdicaoAberta] = useState(false);
+  const [turmaEditandoId, setTurmaEditandoId] = useState<number | null>(null);
+  const [listaTurmas, setListaTurmas] = useState<Turma[]>([]);
 
+  const { data: turmasAPI = [], isLoading, isError, error } = useQuery<Turma[]>({
+    queryKey: ["classrooms"],
+    queryFn: getClassrooms,
+  });
 
-    const { data: turmas = [], isLoading,isError,error } = useQuery<Turma[]>({
-      queryKey: ["classrooms"],
-      queryFn: async () => {
-        return await getClassrooms();
-      },
-    });
+  useEffect(() => {
+    setListaTurmas(turmasAPI);
+  }, [turmasAPI]);
 
-        const { data: niveis = [] } = useQuery<SchoolLevel[]>({
-        queryKey: ["school-levels"],
-        queryFn: async () => {
-          return await getSchoolLevels();
-        },
-      });
-
-  async function adicionarTurma(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    /*
-     *
-     * e depois invalidar a query ["classrooms"].
-     */
-
-      const classroom: TurmaForm = {
-        id: novaTurma.id,
-        letra: `${novaTurma.letra}`,
-        sala: novaTurma.sala.trim(),
-        alunos: novaTurma.alunos,
-        classe: novaTurma.classe,
-      };
-      
-     const result = await postClassRoom(classroom);
-
-     console.log("Turma criada com sucesso:", result);
-
+  function resetFormulario() {
     setNovaTurma(turmaVazia);
+    setTurmaEditandoId(null);
     setFormularioAberto(false);
   }
+
   function abrirEdicao(turma: Turma) {
-      setNovaTurma({
-        id: turma.id,
-        classe: turma.classe,
-        letra: turma.letra,
-        alunos: turma.alunos,
-        sala: turma.sala
-      });
-      setFormularioAberto(true);
-      setFormularioAberto(true);
-    }
+    setNovaTurma({
+      id: turma.id,
+      letra: turma.letra,
+      alunos: turma.alunos,
+      sala: turma.sala,
+    });
+    setTurmaEditandoId(turma.id);
+    setFormularioAberto(true);
+  }
+
+  function removerTurma(id: number) {
+    setListaTurmas((prev) => prev.filter((turma) => turma.id !== id));
+  }
+
+  function adicionarTurma(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const turmaParaSalvar: Turma = {
+      id: turmaEditandoId ?? Date.now(),
+      nome: novaTurma.letra.trim() || "Turma",
+      diretor: null,
+      classe: 0,
+      letra: novaTurma.letra,
+      alunos: Number(novaTurma.alunos) || 0,
+      sala: novaTurma.sala.trim(),
+    };
+
+    setListaTurmas((prev) => {
+      if (turmaEditandoId !== null) {
+        return prev.map((turma) => (turma.id === turmaEditandoId ? turmaParaSalvar : turma));
+      }
+
+      return [turmaParaSalvar, ...prev];
+    });
+
+    resetFormulario();
+  }
 
   return (
     <AppShell>
@@ -127,7 +112,11 @@ function TurmasPage() {
         action={
           <button
             type="button"
-            onClick={() => setFormularioAberto(true)}
+            onClick={() => {
+              setNovaTurma(turmaVazia);
+              setTurmaEditandoId(null);
+              setFormularioAberto(true);
+            }}
             className="bg-accent text-accent-foreground text-sm font-semibold py-2 px-3 rounded-md ring-1 ring-accent/40"
           >
             + Nova turma
@@ -145,7 +134,6 @@ function TurmasPage() {
         <section className="px-8 py-8">
           <div className="glass clip p-5">
             <p className="text-sm text-red-400">Não foi possível carregar as turmas.</p>
-
             {error instanceof Error && <p className="text-xs text-mut mt-2">{error.message}</p>}
           </div>
         </section>
@@ -153,51 +141,47 @@ function TurmasPage() {
 
       {!isLoading && !isError && (
         <section className="px-8 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {turmas.map((t) => (
-            <article key={t.nome} className="glass clip p-5">
-              <div className="flex items-start justify-between">
+          {listaTurmas.map((t) => (
+            <article key={t.id} className="glass clip border border-white/5 p-5 shadow-sm shadow-black/5">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-
-
                   <h2 className="text-xl font-semibold mt-1">{t.nome}</h2>
                 </div>
 
-                <span className="text-[11px] px-2 py-1 rounded-full bg-surface ring-1 ring-white/10 text-mut">
+                <span className="rounded-full bg-surface px-2 py-1 text-[11px] ring-1 ring-white/10 text-mut">
                   Sala {t.sala}
                 </span>
               </div>
 
-              <p className="text-sm text-mut mt-3">Diretor(a): {t.diretor}</p>
+              <p className="mt-3 text-sm text-mut">Diretor(a): {t.diretor || "—"}</p>
 
-              <div className="mt-4 flex items-end justify-between">
+              <div className="mt-4 flex items-end justify-between gap-3">
                 <div>
                   <p className="text-[11px] text-mut">Alunos</p>
-
                   <p className="text-lg font-semibold">{t.alunos}</p>
                 </div>
 
-                <div className="text-right justify-end flex mt-2">
-                  <button type="button" onClick={() => abrirEdicao(t)} className="brounded-md border border-line px-2.5 py-1 text-xs text-warn hover:bg-pass/10 ">
-                    Editar turma
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => abrirEdicao(t)}
+                    className="rounded-md border border-line px-2.5 py-1 text-xs text-warn hover:bg-warn/10"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => removerTurma(t.id)}
+                    className="rounded-md border border-line px-2.5 py-1 text-xs text-fail hover:bg-fail/10"
+                  >
+                    Remover
                   </button>
                 </div>
               </div>
-
-              {/* <div className="h-1.5 rounded-full bg-surface-strong mt-3">
-                <div
-                  className="h-full rounded-full bg-brand"
-                  style={{
-                    width: `${Math.min(
-                      (Number(t.mediaTurma) / maxNotaDaTurma(t.nome)) * 100,
-                      100,
-                    )}%`,
-                  }}
-                />
-              </div> */}
             </article>
           ))}
 
-          {turmas.length === 0 && (
+          {listaTurmas.length === 0 && (
             <div className="col-span-full">
               <div className="glass clip p-8 text-center">
                 <p className="text-sm text-mut">Nenhuma turma encontrada.</p>
@@ -207,42 +191,21 @@ function TurmasPage() {
         </section>
       )}
 
-      <Dialog open={formularioAberto} onOpenChange={setFormularioAberto}>
+      <Dialog open={formularioAberto} onOpenChange={(open) => {
+        if (!open) resetFormulario();
+        else setFormularioAberto(true);
+      }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nova turma</DialogTitle>
-
+            <DialogTitle>{turmaEditandoId !== null ? "Editar turma" : "Nova turma"}</DialogTitle>
             <DialogDescription>
-              Preencha os dados da turma para a guardar no sistema.
+              {turmaEditandoId !== null
+                ? "Atualize os dados desta turma."
+                : "Preencha os dados da turma para a guardar no sistema."}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={adicionarTurma} className="grid gap-4">
-            <div className="grid gap-2">
-              <label htmlFor="nome-turma" className="text-sm font-medium">
-                Classe
-              </label>
-
-              <select
-                id="nome-turma"
-                required
-                value={novaTurma.classe}
-                onChange={(event) =>
-                  setNovaTurma({
-                    ...novaTurma,
-                    classe: parseInt(event.target.value) || 0,
-                  })
-                }
-                className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-              >
-                {niveis.map((classe) => (
-                  <option key={classe.id} value={classe.id}>
-                    {classe.nome}
-                  </option>
-                ))}
-              </select>
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <label htmlFor="letra-turma" className="text-sm font-medium">
@@ -282,66 +245,34 @@ function TurmasPage() {
                   className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
                   placeholder="Ex.: B-12"
                 />
-                <div className="justify-end flex mt-2 ">
-                  <button className="bg-danger p-5">Editar turma</button>
-                </div>
               </div>
             </div>
 
-            {/* {false
-      &&
-      <>
-          <div className="grid gap-2">
-              <label
-                htmlFor="diretor-turma"
-                className="text-sm font-medium"
-              >
-                Diretor(a)
+            <div className="grid gap-2">
+              <label htmlFor="alunos-turma" className="text-sm font-medium">
+                Capacidade da Turma (nº de alunos)
               </label>
 
               <input
-                id="diretor-turma"
+                id="alunos-turma"
+                type="number"
+                min="0"
                 required
-                value={novaTurma.diretor}
+                value={novaTurma.alunos}
                 onChange={(event) =>
                   setNovaTurma({
                     ...novaTurma,
-                    diretor: event.target.value,
+                    alunos: parseInt(event.target.value) || 0,
                   })
                 }
                 className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                placeholder="Ex.: Prof. Almeida Cunha"
               />
-            </div>
-      </> */}
-
-            <div className="gap-4">
-              <div className="grid gap-2">
-                <label htmlFor="alunos-turma" className="text-sm font-medium">
-                  Capacidade da Turma (nº de alunos)
-                </label>
-
-                <input
-                  id="alunos-turma"
-                  type="number"
-                  min="0"
-                  required
-                  value={novaTurma.alunos}
-                  onChange={(event) =>
-                    setNovaTurma({
-                      ...novaTurma,
-                      alunos: parseInt(event.target.value) || 0,
-                    })
-                  }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                />
-              </div>
             </div>
 
             <DialogFooter>
               <button
                 type="button"
-                onClick={() => setFormularioAberto(false)}
+                onClick={resetFormulario}
                 className="text-sm px-3 py-2 rounded-md ring-1 ring-white/10"
               >
                 Cancelar
@@ -351,7 +282,7 @@ function TurmasPage() {
                 type="submit"
                 className="bg-accent text-accent-foreground text-sm font-semibold px-3 py-2 rounded-md"
               >
-                Adicionar turma
+                {turmaEditandoId !== null ? "Guardar alterações" : "Adicionar turma"}
               </button>
             </DialogFooter>
           </form>

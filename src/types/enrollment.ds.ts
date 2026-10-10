@@ -1,4 +1,4 @@
-export type EnrollmentStatus = "active" | "inactive";
+export type EnrollmentStatus = 0 | 1 | 2;
 
 export type EnrollmentAPI = {
   id: number;
@@ -9,6 +9,7 @@ export type EnrollmentAPI = {
   status: EnrollmentStatus;
   created_at: string;
   updated_at: string;
+  
 
   student: {
     id: number;
@@ -59,7 +60,6 @@ export type EnrollmentAPI = {
 
 export type Enrollment = {
   id: number;
-
   studentId: number;
   studentName: string;
   studentNumber: string;
@@ -68,17 +68,14 @@ export type Enrollment = {
   guardian: string;
   guardianPhone: string;
   address: string;
-
   classroomId: number | null;
   classroomName: string | null;
   classroomRoom: string | null;
-
   academicYearId: number;
+  createdAt: Date;
   academicYearName: string;
-
   schoolLevelId: number;
   schoolLevelName: string;
-
   status: EnrollmentStatus;
 };
 
@@ -90,7 +87,14 @@ export type EnrollmentForm = {
   school_level_id: number;
 };
 
+export const EnrollmentStatus = {
+    PENDING: 0,
+    APPROVED: 1,
+    REJECTED: 2
+} as const;
+
+
 export type EnrollmentStatusUpdateForm = {
   id: number;
-  status: EnrollmentStatus;
+  status: number;
 };

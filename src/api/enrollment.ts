@@ -20,11 +20,10 @@ const transformEnrollmentAPIToEnrollment = (
   guardian: enrollment.student.guardian,
   guardianPhone: enrollment.student.guardian_phone,
   address: enrollment.student.address,
-
   classroomId: enrollment.classroom_id,
   classroomName: enrollment.classroom?.name ?? null,
   classroomRoom: enrollment.classroom?.room ?? null,
-
+  createdAt: new Date(enrollment.created_at),
   academicYearId: enrollment.academic_year_id,
   academicYearName: enrollment.academic_year.name,
 

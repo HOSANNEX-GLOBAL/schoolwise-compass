@@ -7,7 +7,7 @@ import { SchoolLevel } from "@/types/schoollevel.ds";
 import { getRegistrations, postRegistrations, putRegistrations, updateRegistrationStatus } from "@/api/registration";
 import { Registration, RegistrationForm, RegistrationStatus } from "@/types/registration.ds";
 
-type InscricaoForm = {
+export type InscricaoForm = {
   id: number | null;
   nome: string;
   bi: string;
@@ -19,7 +19,7 @@ type InscricaoForm = {
   classe: string;
 };
 
-const inscricaoVazia: InscricaoForm = {
+export const inscricaoVazia: InscricaoForm = {
   id: null,
   nome: "",
   bi: "",

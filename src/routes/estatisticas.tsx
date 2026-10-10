@@ -52,19 +52,19 @@ function EstatisticasPage() {
       />
 
       <section className="px-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="glass clip p-5">
+        <div className="glass clip border border-white/5 p-5 shadow-sm shadow-black/5">
           <p className="text-[11px] uppercase tracking-[0.15em] text-mut">Aprovados</p>
           <p className="text-3xl font-semibold mt-2 leading-none text-pass">{pct(aprovados)}%</p>
           <p className="text-[11px] text-mut mt-2">
             {aprovados} de {total} alunos avaliados
           </p>
         </div>
-        <div className="glass clip p-5">
+        <div className="glass clip border border-white/5 p-5 shadow-sm shadow-black/5">
           <p className="text-[11px] uppercase tracking-[0.15em] text-mut">Em recurso</p>
           <p className="text-3xl font-semibold mt-2 leading-none text-warn">{pct(recursos)}%</p>
           <p className="text-[11px] text-mut mt-2">{recursos} alunos em exame de recurso</p>
         </div>
-        <div className="glass clip p-5">
+        <div className="glass clip border border-white/5 p-5 shadow-sm shadow-black/5">
           <p className="text-[11px] uppercase tracking-[0.15em] text-mut">Reprovados</p>
           <p className="text-3xl font-semibold mt-2 leading-none text-fail">{pct(reprovados)}%</p>
           <p className="text-[11px] text-mut mt-2">{reprovados} alunos sem aproveitamento</p>
@@ -72,7 +72,7 @@ function EstatisticasPage() {
       </section>
 
       <section className="px-8 mt-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <div className="glass rounded-xl p-5">
+        <div className="glass rounded-xl border border-white/5 p-5 shadow-sm shadow-black/5">
           <h2 className="text-sm font-semibold mb-4">Desempenho por turma</h2>
           <div className="space-y-3">
             {turmas.map((t) => (
@@ -94,7 +94,7 @@ function EstatisticasPage() {
           </div>
         </div>
 
-        <div className="glass rounded-xl p-5">
+        <div className="glass rounded-xl border border-white/5 p-5 shadow-sm shadow-black/5">
           <h2 className="text-sm font-semibold mb-4">Desempenho por disciplina</h2>
           <div className="space-y-3">
             {disciplinas.map((d) => (
@@ -115,35 +115,35 @@ function EstatisticasPage() {
         </div>
       </section>
 
-      <section className="px-8 mt-4">
-        <div className="glass rounded-xl overflow-hidden">
-          <div className="px-5 py-4 border-b border-line">
+      <section className="px-4 sm:px-8 mt-4">
+        <div className="glass overflow-hidden rounded-xl border border-white/5">
+          <div className="border-b border-line px-5 py-4">
             <h2 className="text-sm font-semibold">Relatório de aproveitamento por aluno</h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[620px]">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
-                <tr className="text-[11px] uppercase tracking-wider text-mut border-b border-line">
-                  <th className="text-left font-medium py-2.5 px-5">Aluno</th>
-                  <th className="text-left font-medium py-2.5">Turma</th>
-                  <th className="text-center font-medium py-2.5">T1</th>
-                  <th className="text-center font-medium py-2.5">T2</th>
-                  <th className="text-center font-medium py-2.5">T3</th>
-                  <th className="text-right font-medium py-2.5 pr-5">Média final</th>
+                <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
+                  <th scope="col" className="px-5 py-3 text-left font-medium">Aluno</th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium">Turma</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">T1</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">T2</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">T3</th>
+                  <th scope="col" className="px-5 py-3 text-right font-medium">Média final</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
                 {alunos.map((a) => (
                   <tr
                     key={a.numero}
-                    className="border-b border-line/60 last:border-0 hover:bg-surface"
+                    className="border-b border-line/60 last:border-0 hover:bg-surface/60"
                   >
-                    <td className="py-2.5 px-5 text-foreground">{a.nome}</td>
-                    <td className="py-2.5">{a.turma}</td>
-                    <td className="py-2.5 text-center">{a.notas.t1}</td>
-                    <td className="py-2.5 text-center">{a.notas.t2}</td>
-                    <td className="py-2.5 text-center">{a.notas.t3}</td>
-                    <td className="py-2.5 pr-5 text-right font-medium text-foreground">
+                    <td className="px-5 py-3 text-foreground">{a.nome}</td>
+                    <td className="px-4 py-3">{a.turma}</td>
+                    <td className="px-3 py-3 text-center">{a.notas.t1}</td>
+                    <td className="px-3 py-3 text-center">{a.notas.t2}</td>
+                    <td className="px-3 py-3 text-center">{a.notas.t3}</td>
+                    <td className="px-5 py-3 text-right font-medium text-foreground">
                       {fmt(media(a.notas))} /{maxNotaDaTurma(a.turma)}
                     </td>
                   </tr>
