@@ -5,7 +5,8 @@ export type Turma = {
   alunos: number;
   sala: string;
   letra: string;
-  classe: number;
+  schoolLevelId: number;
+  classe: string;
 };
 
 export type TurmaApi = {
@@ -17,6 +18,8 @@ export type TurmaApi = {
   room: string;
   teacher_id: number | null;
   updated_at: string;
+  school_level_id: number;
+  school_level: string,
   academic_year: {
     id: number;
     name: string;
@@ -34,6 +37,7 @@ export type TurmaForm = {
     letra: string;
     sala: string;
     alunos: number;
-    classe: number;
+    schoolLevelId: number;
+    classe: string;
 }
   

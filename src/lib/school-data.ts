@@ -9,7 +9,7 @@ export type Estado = "Ativo" | "Transferido" | "Concluido" | "Desistente";
   dataNascimento?: string;
   contactoEncarregado?: string;
   estadoMatricula?: "Ativo" | "Transferido";
-  notas: { t1: number; t2: number; t3: number };
+  notas: { MAC: number; PP: number; PT: number };
 };
 
 export const anoLetivo = "2026-2027";
@@ -27,7 +27,7 @@ export const classesEnsinoGeral = [
   "9.ª classe",
 ] as const;
 
-export function maxNotaDaClasse(classe: string): 10 | 20 {
+export function maxNotaDaClasse(classe: string): 10 | 20{
   const numero = Number.parseInt(classe, 10);
   return classe === "Iniciação" || numero <= 5 ? 10 : 20;
 }
@@ -42,13 +42,29 @@ export function normalizarNota(valor: number, turma: string): number {
   return Math.min(maximo, Math.max(0, ajustado));
 }
 
-export function normalizarNotas(notas: Aluno["notas"], turma: string): Aluno["notas"] {
+// Calcula automaticamente a Média Trimestral dividindo por 3
+export function calcularMediaTrimestral(mac: number, pp: number, pt: number): number {
+  const media = (mac + pp + pt) / 3;
+  
+  return Number(Math.round(media).toFixed(1));
+}
+
+export function normalizarNotas(notas: Aluno["notas"], turma: string): Aluno["notas"] & { MT: number } {
+
+  const macNormalizado = normalizarNota(notas.MAC, turma);
+  const ppNormalizado = normalizarNota(notas.PP, turma);
+  const ptNormalizado = normalizarNota(notas.PT, turma);
+
+  const mtCalculado = calcularMediaTrimestral(macNormalizado, ppNormalizado, ptNormalizado);
+
+  // Devolve as notas tratadas e o cálculo da MT incluído automaticamente
   return {
-     t1: normalizarNota(notas.t1, turma),
-     t2: normalizarNota(notas.t2, turma),
-     t3: normalizarNota(notas.t3, turma),
-   };
- }
+    MAC: macNormalizado,
+    PP: ppNormalizado,
+    PT: ptNormalizado,
+    MT: mtCalculado,
+  };
+}
 
 export function cicloDaClasse(classe: string): string {
   const numero = Number.parseInt(classe, 10);
@@ -56,17 +72,18 @@ export function cicloDaClasse(classe: string): string {
   return "I ciclo do ensino secundário";
 }
 
+
 export const alunos: Aluno[] = [
   { numero: "2024-0187", nome: "António F. Neto", turma: "10.º A", encarregado: "Fernando Neto",
-      notas: { t1: 10, t2: 12, t3: 14 }
+      notas: { MAC: 10, PP: 12, PT: 14 }
   },
   { numero: "2024-0188", nome: "Beatriz M. Silva", turma: "10.º A", encarregado: "Maria Silva",
-      notas: { t1: 8, t2: 10, t3: 12 }
+      notas: { MAC: 8, PP: 10, PT: 12 }
   }
 ];
 
-export function media(n: { t1: number; t2: number; t3: number }): number {
-  return Math.round(((n.t1 + n.t2 + n.t3) / 3) * 10) / 10;
+export function media(n: { MAC: number; PP: number; PT: number }): number {
+  return Math.round(((n.MAC + n.PP + n.PT ) / 3) * 10) / 10;
 }
 
 export function estado(m: number, maxNota: 10 | 20): EstadoAcademico {
@@ -82,10 +99,10 @@ export function fmt(n: number): string {
 export type Turma = {
   nome: string;
   ciclo: string;
-  diretor: string;
+  diretor: string ;
   alunos: number;
   sala: string;
-  mediaTurma: number;
+  // mediaTurma: number;
 };
 
 export const turmas: Turma[] = [
@@ -95,7 +112,7 @@ export const turmas: Turma[] = [
     diretor: "Prof. Almeida Cunha",
     alunos: 34,
     sala: "B-12",
-    mediaTurma: 6.7,
+    // mediaTurma: 6.7,
   },
   {
     nome: "2.ª classe A",
@@ -103,7 +120,7 @@ export const turmas: Turma[] = [
     diretor: "Prof.ª Rita Lemos",
     alunos: 31,
     sala: "B-14",
-    mediaTurma: 5.9,
+    // mediaTurma: 7.2,
   },
   {
     nome: "3.ª classe A",
@@ -111,7 +128,7 @@ export const turmas: Turma[] = [
     diretor: "Prof. Ivo Cardoso",
     alunos: 29,
     sala: "C-03",
-    mediaTurma: 6.5,
+    // mediaTurma: 6.5,
   },
   {
     nome: "4.ª classe A",
@@ -119,7 +136,7 @@ export const turmas: Turma[] = [
     diretor: "Prof.ª Sónia Matos",
     alunos: 30,
     sala: "C-05",
-    mediaTurma: 7.6,
+    // mediaTurma: 7.6,
   },
   {
     nome: "5.ª classe A",
@@ -127,7 +144,7 @@ export const turmas: Turma[] = [
     diretor: "Prof. Hélder Pinto",
     alunos: 27,
     sala: "A-01",
-    mediaTurma: 7.1,
+    // mediaTurma: 7.1,
   },
   {
     nome: "6.ª classe A",
@@ -135,7 +152,7 @@ export const turmas: Turma[] = [
     diretor: "Prof.ª Ângela Dias",
     alunos: 26,
     sala: "A-04",
-    mediaTurma: 13.0,
+    // mediaTurma: 13.0,
   },
 
 ];

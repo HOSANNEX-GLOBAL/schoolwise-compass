@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Turma, TurmaForm } from "@/types/classroom.ds";
 
 import { AppShell, PageHeader } from "@/components/AppShell";
@@ -15,18 +15,24 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { getClassrooms } from "@/api/classrooms";
+import { getClassrooms, postClassRoom } from "@/api/classrooms";
+import { getSchoolLevels } from "@/api/schoollevel";
+import { SchoolLevel } from "@/types/schoollevel.ds";
 
 const turmaVazia: {
   id: number;
   letra: string;
   alunos: number;
   sala: string;
+  classe: string;
+  schoolLevelId: number;
 } = {
   id: 0,
   letra: "",
   alunos: 0,
   sala: "",
+  classe: "",
+  schoolLevelId: 0,
 };
 
 export const Route = createFileRoute("/turmas")({
@@ -45,8 +51,21 @@ export const Route = createFileRoute("/turmas")({
 });
 
 function TurmasPage() {
+  const queryClient = useQueryClient();
   const [formularioAberto, setFormularioAberto] = useState(false);
-  const [novaTurma, setNovaTurma] = useState(turmaVazia);
+  const [novaTurma, setNovaTurma] = useState<TurmaForm>(turmaVazia);
+  const [erroFormulario, setErroFormulario] = useState<string | null>(null);
+  const [aGuardar, setAGuardar] = useState(false);
+
+  const {
+    data: niveis = [],
+    isLoading: niveisLoading,
+    isError: niveisError,
+    error: erroNiveis,
+  } = useQuery<SchoolLevel[]>({
+    queryKey: ["school-levels"],
+    queryFn: getSchoolLevels,
+  });
   const [turmaEditandoId, setTurmaEditandoId] = useState<number | null>(null);
   const [listaTurmas, setListaTurmas] = useState<Turma[]>([]);
 
@@ -62,6 +81,7 @@ function TurmasPage() {
   function resetFormulario() {
     setNovaTurma(turmaVazia);
     setTurmaEditandoId(null);
+    setErroFormulario(null);
     setFormularioAberto(false);
   }
 
@@ -71,6 +91,8 @@ function TurmasPage() {
       letra: turma.letra,
       alunos: turma.alunos,
       sala: turma.sala,
+      schoolLevelId: turma.schoolLevelId,
+      classe: turma.classe,
     });
     setTurmaEditandoId(turma.id);
     setFormularioAberto(true);
@@ -80,28 +102,55 @@ function TurmasPage() {
     setListaTurmas((prev) => prev.filter((turma) => turma.id !== id));
   }
 
-  function adicionarTurma(event: FormEvent<HTMLFormElement>) {
+  async function adicionarTurma(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const turmaParaSalvar: Turma = {
       id: turmaEditandoId ?? Date.now(),
       nome: novaTurma.letra.trim() || "Turma",
       diretor: null,
-      classe: 0,
+      schoolLevelId: novaTurma.schoolLevelId ?? 0,
       letra: novaTurma.letra,
       alunos: Number(novaTurma.alunos) || 0,
       sala: novaTurma.sala.trim(),
+      classe: niveis.find((nivel) => nivel.id === novaTurma.schoolLevelId)?.nome ?? "",
     };
 
-    setListaTurmas((prev) => {
-      if (turmaEditandoId !== null) {
-        return prev.map((turma) => (turma.id === turmaEditandoId ? turmaParaSalvar : turma));
-      }
+    if (turmaEditandoId !== null) {
+      setListaTurmas((prev) =>
+        prev.map((turma) => (turma.id === turmaEditandoId ? turmaParaSalvar : turma)),
+      );
+      resetFormulario();
+      return;
+    }
 
-      return [turmaParaSalvar, ...prev];
-    });
+    setAGuardar(true);
+    setErroFormulario(null);
+    try {
+      const turmaCriada = await postClassRoom({
+        letra: novaTurma.letra.trim(),
+        sala: novaTurma.sala.trim(),
+        alunos: Number(novaTurma.alunos) || 0,
+        classe: niveis.find((nivel) => nivel.id === novaTurma.schoolLevelId)?.nome ?? "",
+        schoolLevelId: novaTurma.schoolLevelId,
+      });
 
-    resetFormulario();
+      setListaTurmas((prev) => [turmaCriada, ...prev]);
+      queryClient.setQueryData<Turma[]>(["classrooms"], (current = []) => [
+        turmaCriada,
+        ...current.filter((turma) => turma.id !== turmaCriada.id),
+      ]);
+      await queryClient.invalidateQueries({ queryKey: ["classrooms"] });
+      resetFormulario();
+    } catch (error) {
+      setErroFormulario(
+        error instanceof Error
+          ? `Não foi possível guardar a turma: ${error.message}`
+          : "Não foi possível guardar a turma. Tente novamente.",
+      );
+    } finally {
+      setAGuardar(false);
+    }
   }
 
   return (
@@ -206,6 +255,11 @@ function TurmasPage() {
           </DialogHeader>
 
           <form onSubmit={adicionarTurma} className="grid gap-4">
+            {erroFormulario && (
+              <p className="text-sm text-red-400" role="alert">
+                {erroFormulario}
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <label htmlFor="letra-turma" className="text-sm font-medium">
@@ -246,6 +300,41 @@ function TurmasPage() {
                   placeholder="Ex.: B-12"
                 />
               </div>
+
+              <div className="grid gap-2">
+                <label htmlFor="turma-niveis" className="text-sm font-medium">
+                  Nível
+                </label>
+
+                <select
+                  id="turma-niveis"
+                  required
+                  value={novaTurma.schoolLevelId ? String(novaTurma.schoolLevelId) : ""}
+                  onChange={(event) =>
+                    setNovaTurma({
+                      ...novaTurma,
+                      schoolLevelId: Number(event.target.value),
+                    })
+                  }
+                  disabled={niveisLoading || niveisError}
+                  className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
+                >
+                  <option value="">
+                    {niveisLoading ? "A carregar níveis..." : "Selecione o nível"}
+                  </option>
+                  {niveis.map((nivel) => (
+                    <option key={nivel.id} value={nivel.id}>
+                      {nivel.nome}
+                    </option>
+                  ))}
+                </select>
+                {niveisError && (
+                  <p className="text-xs text-red-400" role="alert">
+                    Não foi possível carregar os níveis.
+                    {erroNiveis instanceof Error ? ` ${erroNiveis.message}` : ""}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="grid gap-2">
@@ -273,6 +362,7 @@ function TurmasPage() {
               <button
                 type="button"
                 onClick={resetFormulario}
+                disabled={aGuardar}
                 className="text-sm px-3 py-2 rounded-md ring-1 ring-white/10"
               >
                 Cancelar
@@ -280,9 +370,14 @@ function TurmasPage() {
 
               <button
                 type="submit"
+                disabled={aGuardar}
                 className="bg-accent text-accent-foreground text-sm font-semibold px-3 py-2 rounded-md"
               >
-                {turmaEditandoId !== null ? "Guardar alterações" : "Adicionar turma"}
+                {aGuardar
+                  ? "A guardar..."
+                  : turmaEditandoId !== null
+                    ? "Guardar alterações"
+                    : "Adicionar turma"}
               </button>
             </DialogFooter>
           </form>

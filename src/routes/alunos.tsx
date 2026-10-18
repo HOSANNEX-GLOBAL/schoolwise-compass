@@ -116,9 +116,13 @@ function AlunosPage() {
               onChange={(e) => setTurma(e.target.value)}
               className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-2 text-sm focus:outline-none"
             >
-              <option className="bg-ink2">Todas</option>
+             
+              <option className="bg-ink2" value="Todas">
+                Todas
+              </option>
+                        
               {turmas.map((t) => (
-                <option key={t.nome} className="bg-ink2">
+                <option key={t.nome} className="bg-ink2" value={t.nome}>
                   {t.nome}
                 </option>
               ))}

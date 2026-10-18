@@ -11,20 +11,19 @@ import {
   fmt,
   maxNotaDaTurma,
   normalizarNotas,
-  turmas as turmasIniciais,
   type Aluno,
   type Alteracao,
   type Disciplina,
-  type Turma,
   anoLetivo,
 } from "@/lib/school-data";
 import { getSchoolLevels } from "@/api/schoollevel";
 import { SchoolLevel } from "@/types/schoollevel.ds";
 import { useQuery } from "@tanstack/react-query";
+import { getClassrooms } from "@/api/classrooms";
+import type { Turma as TurmaAPI } from "@/types/classroom.ds";
 
 const ALUNOS_STORAGE_KEY = "schoolwise:alunos:v1";
 const DISCIPLINAS_STORAGE_KEY = "schoolwise:disciplinas:v1";
-const TURMAS_STORAGE_KEY = "schoolwise:turmas:v2";
 const HISTORICO_STORAGE_KEY = "schoolwise:historico-notas:v1";
 
 export const Route = createFileRoute("/notas")({
@@ -46,15 +45,14 @@ export const Route = createFileRoute("/notas")({
   component: NotasPage,
 });
 
-type Linha = { numero: string; nome: string; turma: string; t1: string; t2: string; t3: string };
+type Linha = { numero: string; nome: string; turma: string; MAC: string; PP: string; PT: string };
 
 function NotasPage() {
   const usuario = readSession();
   const [alunos, setAlunos] = useState<Aluno[]>(alunosIniciais);
   const [disciplinas, setDisciplinas] = useState<Disciplina[]>(disciplinasIniciais);
-  const [turmas, setTurmas] = useState<Turma[]>(turmasIniciais);
   const [disciplina, setDisciplina] = useState(disciplinasIniciais[0]!.nome);
-  const [turma, setTurma] = useState(turmasIniciais[0]!.nome);
+  const [turma, setTurma] = useState("");
   const [nivelAcademicoId, setNivelAcademicoId] = useState("");
   const [historico, setHistorico] = useState<Alteracao[]>([]);
   const [linhas, setLinhas] = useState<Linha[]>(() =>
@@ -62,11 +60,21 @@ function NotasPage() {
       numero: a.numero,
       nome: a.nome,
       turma: a.turma,
-      t1: String(a.notas.t1),
-      t2: String(a.notas.t2),
-      t3: String(a.notas.t3),
+      MAC: String(a.notas.MAC),
+      PP: String(a.notas.PP),
+      PT: String(a.notas.PT),
     })),
   );
+
+  const {
+    data: turmasAPI = [],
+    isLoading: turmasLoading,
+    isError: turmasError,
+    error: erroTurmas,
+  } = useQuery<TurmaAPI[]>({
+    queryKey: ["classrooms"],
+    queryFn: getClassrooms,
+  });
 
   const disciplinasPermitidas =
     usuario?.cargo === "professor"
@@ -76,8 +84,8 @@ function NotasPage() {
       : disciplinasIniciais;
   const turmasPermitidas =
     usuario?.cargo === "professor"
-      ? turmasIniciais.filter((t) => usuario.turmas?.includes(t.nome))
-      : turmasIniciais;
+      ? turmasAPI.filter((t) => usuario.turmas?.includes(t.nome))
+      : turmasAPI;
 
   useEffect(() => {
     const guardados = window.localStorage.getItem(ALUNOS_STORAGE_KEY);
@@ -93,19 +101,26 @@ function NotasPage() {
           numero: a.numero,
           nome: a.nome,
           turma: a.turma,
-          t1: String(a.notas.t1),
-          t2: String(a.notas.t2),
-          t3: String(a.notas.t3),
+          MAC: String(a.notas.MAC),
+          PP: String(a.notas.PP),
+          PT: String(a.notas.PT),
         })),
       );
     }
+
+    
+
     const disciplinasGuardadas = window.localStorage.getItem(DISCIPLINAS_STORAGE_KEY);
     if (disciplinasGuardadas) setDisciplinas(JSON.parse(disciplinasGuardadas) as Disciplina[]);
-    const turmasGuardadas = window.localStorage.getItem(TURMAS_STORAGE_KEY);
-    if (turmasGuardadas) setTurmas(JSON.parse(turmasGuardadas) as Turma[]);
     const historicoGuardado = window.localStorage.getItem(HISTORICO_STORAGE_KEY);
     if (historicoGuardado) setHistorico(JSON.parse(historicoGuardado) as Alteracao[]);
   }, []);
+
+  useEffect(() => {
+    if (!turmasPermitidas.some((item) => item.nome === turma)) {
+      setTurma(turmasPermitidas[0]?.nome ?? "");
+    }
+  }, [turmasAPI, usuario?.cargo, usuario?.turmas, turma]);
 
   useEffect(() => {
     if (usuario?.cargo === "professor") {
@@ -134,14 +149,14 @@ function NotasPage() {
       const linha = linhas.find((item) => item.numero === aluno.numero);
       if (!linha) return aluno;
       const notas = {
-        t1: Number(linha.t1) || 0,
-        t2: Number(linha.t2) || 0,
-        t3: Number(linha.t3) || 0,
+        MAC: Number(linha.MAC) || 0,
+        PP: Number(linha.PP) || 0,
+        PT: Number(linha.PT) || 0,
       };
       if (
-        aluno.notas.t1 !== notas.t1 ||
-        aluno.notas.t2 !== notas.t2 ||
-        aluno.notas.t3 !== notas.t3
+        aluno.notas.MAC !== notas.MAC ||
+        aluno.notas.PP !== notas.PP ||
+        aluno.notas.PT !== notas.PT
       ) {
         alteracoes += 1;
       }
@@ -178,7 +193,7 @@ function NotasPage() {
   }
 
   const calc = (l: Linha) => {
-    const vals = [l.t1, l.t2, l.t3].map((v) => Number(v)).filter((v) => !Number.isNaN(v) && v > 0);
+    const vals = [l.MAC, l.PP, l.PT].map((v) => Number(v)).filter((v) => !Number.isNaN(v) && v > 0);
     if (vals.length === 0) return 0;
     return Math.round((vals.reduce((s, v) => s + v, 0) / vals.length) * 10) / 10;
   };
@@ -188,7 +203,7 @@ function NotasPage() {
     return ms.reduce((s, m) => s + m, 0) / ms.length;
   }, [linhas]);
 
-  const set = (numero: string, campo: "t1" | "t2" | "t3", valor: string) => {
+  const set = (numero: string, campo: "MAC" | "PP" | "PT", valor: string) => {
     if (valor !== "" && !/^\d{0,2}$/.test(valor)) return;
     if (
       valor !== "" &&
@@ -224,11 +239,62 @@ function NotasPage() {
         }
       />
 
-      <section className="px-8 grid grid-cols-1 xl:grid-cols-12 gap-4">
-        <div className="xl:col-span-8 glass rounded-xl p-5">
+      <section className="px-8 grid grid-cols-1 xl:grid-cols-12 gap-4 ">
+        <div className="xl:col-span-8 glass rounded-xl p-5 w-full min-w-[1200px] mx-auto">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <h2 className="text-sm font-semibold">Grelha de notas - {anoLetivo} </h2>
             <div className="flex flex-wrap items-center gap-2">
+                   <select
+              
+                className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-1.5 text-xs focus:outline-none"
+              >
+                  <option value="Selecione o Trimestre"  className="bg-ink2">
+                    Selecione o Trimestre                  
+                    </option>
+                  <option value="Iº Trimestre" className="bg-ink2">
+                    Iº Trimestre
+                  </option>
+                </select>
+                <select
+              value={turma}
+              onChange={(e) => {
+                const proxima = e.target.value;
+                if (
+                  usuario?.cargo === "professor" &&
+                  !isTeacherAuthorizedFor(usuario, disciplina, proxima)
+                ) {
+                  toast.error("Turma não autorizada", {
+                    description: "Esta turma não corresponde à sua atribuição docente.",
+                  });
+                  return;
+                }
+                setTurma(proxima);
+              }}
+              aria-label="Turma"
+              disabled={turmasLoading || turmasError || turmasPermitidas.length === 0}
+              className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-2 text-sm focus:outline-none"
+            >
+              <option value="" className="bg-ink2">
+                {turmasLoading
+                  ? "A carregar turmas..."
+                  : turmasError
+                    ? "Erro ao carregar turmas"
+                    : turmasPermitidas.length === 0
+                      ? "Sem turmas disponíveis"
+                      : "Selecione a turma"}
+              </option>
+              {turmasPermitidas.map((t) => (
+                <option key={t.id} className="bg-ink2" value={t.nome}>
+                  {t.nome}
+                </option>
+              ))}
+            </select>
+                {turmasError && (
+                  <p className="text-xs text-red-400" role="alert">
+                    Não foi possível carregar as turmas.
+                    {erroTurmas instanceof Error ? ` ${erroTurmas.message}` : ""}
+                  </p>
+                )}
                 <select
                   value={nivelAcademicoId}
                   onChange={(event) => setNivelAcademicoId(event.target.value)}
@@ -298,18 +364,30 @@ function NotasPage() {
                   </option>
                 ))}
               </select>
-              <span className="text-[11px] text-mut">Média automática</span>
+
+                 <select
+              
+                className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-1.5 text-xs focus:outline-none"
+              >
+                  <option value="Selecione o ano lectivo"  className="bg-ink2">
+                    Selecione o ano lectivo
+                  </option>
+                  <option value={anoLetivo} className="bg-ink2">
+                    {anoLetivo}
+                  </option>
+                </select>
+                
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[700px] text-sm">
+            <table className="w-full min-w-[900px] text-sm">
               <thead>
                 <tr className="border-b border-line text-[11px] uppercase tracking-wider text-mut">
                   <th scope="col" className="px-5 py-3 text-left font-medium">Aluno</th>
-                  <th scope="col" className="px-3 py-3 text-center font-medium">T1</th>
-                  <th scope="col" className="px-3 py-3 text-center font-medium">T2</th>
-                  <th scope="col" className="px-3 py-3 text-center font-medium">T3</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">MAC</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">PP</th>
+                  <th scope="col" className="px-3 py-3 text-center font-medium">PT</th>
                   <th scope="col" className="px-3 py-3 text-center font-medium">Média</th>
                   <th scope="col" className="px-5 py-3 text-right font-medium">Estado</th>
                 </tr>
@@ -321,9 +399,9 @@ function NotasPage() {
                   const e = estado(m, maxNota);
                   return (
                     <tr key={l.numero} className="border-b border-line/60 last:border-0 hover:bg-surface/60">
-                      <td className="px-5 py-3 text-foreground">{l.nome}</td>
-                      {(["t1", "t2", "t3"] as const).map((c) => (
-                        <td key={c} className="px-3 py-3 text-center">
+                      <td className="px-5 text-foreground">{l.nome}</td>
+                      {(["MAC", "PP", "PT"] as const).map((c) => (
+                        <td key={c} className="px-3 text-center">
                           <input
                             inputMode="numeric"
                             aria-label={`${c.toUpperCase()} de ${l.nome}`}
@@ -362,7 +440,7 @@ function NotasPage() {
           </p>
         </div>
 
-        <div className="xl:col-span-4 space-y-4">
+        {/* <div className="xl:col-span-4 space-y-4">
           <div className="glass clip p-5">
             <h2 className="text-sm font-semibold mb-1">Gestão de recursos</h2>
             <p className="text-[11px] text-mut mb-3">Alunos em exame de recurso nesta grelha.</p>
@@ -394,7 +472,7 @@ function NotasPage() {
               ))}
             </ol>
           </div>
-        </div>
+        </div> */}
       </section>
     </AppShell>
   );

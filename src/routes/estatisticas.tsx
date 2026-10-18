@@ -79,15 +79,13 @@ function EstatisticasPage() {
               <div key={t.nome}>
                 <div className="flex justify-between text-xs mb-1">
                   <span>{t.nome}</span>
-                  <span className="text-mut">
-                    {fmt(t.mediaTurma)} /{maxNotaDaTurma(t.nome)}
-                  </span>
+                  
                 </div>
                 <div className="h-2 rounded-full bg-surface-strong">
-                  <div
+                  {/* <div
                     className={`h-full rounded-full ${t.mediaTurma >= 12 ? "bg-brand" : "bg-warn"}`}
                     style={{ width: `${(t.mediaTurma / maxNotaDaTurma(t.nome)) * 100}%` }}
-                  />
+                  /> */}
                 </div>
               </div>
             ))}
@@ -140,9 +138,9 @@ function EstatisticasPage() {
                   >
                     <td className="px-5 py-3 text-foreground">{a.nome}</td>
                     <td className="px-4 py-3">{a.turma}</td>
-                    <td className="px-3 py-3 text-center">{a.notas.t1}</td>
-                    <td className="px-3 py-3 text-center">{a.notas.t2}</td>
-                    <td className="px-3 py-3 text-center">{a.notas.t3}</td>
+                    <td className="px-3 py-3 text-center">{a.notas.MAC}</td>
+                    <td className="px-3 py-3 text-center">{a.notas.PP}</td>
+                    <td className="px-3 py-3 text-center">{a.notas.PT}</td>
                     <td className="px-5 py-3 text-right font-medium text-foreground">
                       {fmt(media(a.notas))} /{maxNotaDaTurma(a.turma)}
                     </td>

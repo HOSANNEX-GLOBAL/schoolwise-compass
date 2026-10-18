@@ -7,8 +7,11 @@ import { Turma, TurmaApi, TurmaForm } from "@/types/classroom.ds";
     diretor: turma.teacher?.name || null,
     alunos: turma.capacity,
     sala: turma.room,
+    letra: turma.name,
+    schoolLevelId: turma.school_level_id,
+    classe: turma.school_level,
+  });
 
-});
 
 
 export const getClassrooms = async (): Promise<Turma[]> => {
@@ -17,12 +20,14 @@ export const getClassrooms = async (): Promise<Turma[]> => {
 };
 
 
-export const postClassRoom = async (classroomForm: Omit<TurmaForm, "id">): Promise<Turma> => {
-  const classroom: TurmaForm = {
-    name: classroomForm.name,
-    room: classroomForm.room,
-    capacity: classroomForm.capacity,
-    school_level_id: classroomForm.school_level_id,
+export const postClassRoom = async (
+  classroomForm: Pick<TurmaForm, "letra" | "sala" | "alunos" | "classe" | "schoolLevelId">,
+): Promise<Turma> => {
+  const classroom = {
+    name: classroomForm.letra,
+    room: classroomForm.sala,
+    capacity: classroomForm.alunos,
+    school_level_id: classroomForm.schoolLevelId,
   };
 
   const response = await api.post<TurmaApi>("/classrooms", { classroom });
@@ -42,5 +47,3 @@ export const deleteClassRoom = async (classData: Turma): Promise<Turma> => {
   const turmaAtualizada: Turma = transformTurmaAPIToTurma(response.data);
   return turmaAtualizada;
 };
-
-
