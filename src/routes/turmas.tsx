@@ -17,7 +17,9 @@ import {
 
 import { getClassrooms, postClassRoom } from "@/api/classrooms";
 import { getSchoolLevels } from "@/api/schoollevel";
+import { getRoom } from "@/api/room";
 import { SchoolLevel } from "@/types/schoollevel.ds";
+import { Room } from "@/types/room.ds";
 
 const turmaVazia: {
   id: number;
@@ -65,6 +67,15 @@ function TurmasPage() {
   } = useQuery<SchoolLevel[]>({
     queryKey: ["school-levels"],
     queryFn: getSchoolLevels,
+  });
+  const {
+    data: salas = [],
+    isLoading: salasLoading,
+    isError: salasError,
+    error: erroSalas,
+  } = useQuery<Room[]>({
+    queryKey: ["room"],
+    queryFn: getRoom,
   });
   const [turmaEditandoId, setTurmaEditandoId] = useState<number | null>(null);
   const [listaTurmas, setListaTurmas] = useState<Turma[]>([]);
@@ -286,7 +297,7 @@ function TurmasPage() {
                   Sala
                 </label>
 
-                <input
+                <select
                   id="sala-turma"
                   required
                   value={novaTurma.sala}
@@ -296,9 +307,33 @@ function TurmasPage() {
                       sala: event.target.value,
                     })
                   }
-                  className="bg-surface rounded-md px-3 py-2 text-sm ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-brand/50"
-                  placeholder="Ex.: B-12"
-                />
+                  disabled={salasLoading || salasError || salas.length === 0}
+                  className="w-full rounded-md bg-surface px-3 py-2 text-sm ring-1 ring-white/10"
+                >
+                  <option value="">
+                    {salasLoading
+                      ? "A carregar salas..."
+                      : salasError
+                        ? "Não foi possível carregar as salas"
+                        : salas.length === 0
+                          ? "Nenhuma sala criada"
+                          : "Selecione a sala"}
+                  </option>
+                  {salas.map((sala) => (
+                    <option key={sala.id} value={sala.sala}>
+                      {sala.sala}
+                    </option>
+                  ))}
+                </select>
+                {salasError && (
+                  <p className="text-xs text-red-400" role="alert">
+                    Não foi possível carregar as salas.
+                    {erroSalas instanceof Error ? ` ${erroSalas.message}` : ""}
+                  </p>
+                )}
+                {!salasLoading && !salasError && salas.length === 0 && (
+                  <p className="text-xs text-mut">Crie uma sala antes de adicionar uma turma.</p>
+                )}
               </div>
 
               <div className="grid gap-2">
