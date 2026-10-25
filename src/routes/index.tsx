@@ -50,12 +50,6 @@ function HomePage() {
             </span>
           </Link>
           <Link
-            to="/inscricao_publica"
-            className="rounded-md border border-white/35 px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-accent hover:bg-accent hover:text-ink"
-          >
-            Cadastrar-se Agora
-          </Link>
-          <Link
             to="/login"
             className="rounded-md border border-white/35 px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-accent hover:bg-accent hover:text-ink"
           >
