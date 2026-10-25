@@ -1,8 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getSchoolLevels } from "@/api/schoollevel";
+import { SchoolLevel } from "@/types/schoollevel.ds";
+import { useQuery } from "@tanstack/react-query";
 import { AppShell, PageHeader } from "@/components/AppShell";
 import { alunos, documentos, turmas } from "@/lib/school-data";
+
 
 export const Route = createFileRoute("/documentos")({
   head: () => ({
@@ -17,14 +21,30 @@ export const Route = createFileRoute("/documentos")({
       { property: "og:description", content: "Emita documentos oficiais por aluno, turma ou trimestre." },
     ],
   }),
+  
   component: DocumentosPage,
+  
 });
+
+
 
 function DocumentosPage() {
   const [aluno, setAluno] = useState(alunos[0]!.nome);
   const [turma, setTurma] = useState(turmas[0]!.nome);
+  const [nivelAcademicoId, setNivelAcademicoId] = useState("");
 
+  const {
+    data: niveis = [],
+    isLoading: niveisLoading,
+    isError: niveisError,
+  } = useQuery<SchoolLevel[]>({
+    queryKey: ["school-levels"],
+    queryFn: getSchoolLevels,
+  });
+  
   return (
+
+    
     <AppShell>
       <PageHeader eyebrow="Documentos" title="Emissão de documentos escolares" />
 
@@ -82,18 +102,29 @@ function DocumentosPage() {
           <label className="text-[11px] text-mut block mb-1" htmlFor="turma">
             Turma
           </label>
-          <select
-            id="turma"
-            value={turma}
-            onChange={(e) => setTurma(e.target.value)}
-            className="w-full bg-surface ring-1 ring-white/10 rounded-md px-3 py-2 text-sm focus:outline-none"
-          >
-            {turmas.map((t) => (
-              <option key={t.nome} className="bg-ink2">
-                {t.nome}
-              </option>
-            ))}
-          </select>
+        <select
+                  value={nivelAcademicoId}
+                  onChange={(event) => setNivelAcademicoId(event.target.value)}
+                  aria-label="Turmas"
+                  disabled={niveisLoading || niveisError || niveis.length === 0}
+                  className="bg-surface ring-1 ring-white/10 rounded-md px-3 py-1.5 text-xs focus:outline-none disabled:opacity-50"
+                >
+                  <option value="">
+                    {niveisLoading
+                      ? "A carregar turmas..."
+                      : niveisError
+                        ? "Erro ao carregar turmas"
+                        : niveis.length === 0
+                          ? "Sem turmas disponíveis"
+                          : ""
+                          }
+                  </option>
+                  {niveis.map((nivel) => (
+                    <option key={nivel.id} value={nivel.id} className="bg-ink2">
+                      {nivel.nome}
+                    </option>
+                  ))}
+                </select>
           <div className="flex flex-wrap gap-2 mt-4">
             {["Mini pauta", "Pauta trimestral", "Pauta final"].map((t) => (
               <button

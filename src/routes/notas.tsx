@@ -218,7 +218,6 @@ function NotasPage() {
     data: niveis = [],
     isLoading: niveisLoading,
     isError: niveisError,
-    error: erroNiveis,
   } = useQuery<SchoolLevel[]>({
     queryKey: ["school-levels"],
     queryFn: getSchoolLevels,
@@ -289,12 +288,7 @@ function NotasPage() {
                 </option>
               ))}
             </select>
-                {turmasError && (
-                  <p className="text-xs text-red-400" role="alert">
-                    Não foi possível carregar as turmas.
-                    {erroTurmas instanceof Error ? ` ${erroTurmas.message}` : ""}
-                  </p>
-                )}
+        
                 <select
                   value={nivelAcademicoId}
                   onChange={(event) => setNivelAcademicoId(event.target.value)}

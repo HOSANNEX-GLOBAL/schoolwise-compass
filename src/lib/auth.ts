@@ -1,9 +1,9 @@
-export type UserRole = "admin" | "secretario" | "dp" | "professor";
+export type UserRole = "admin" | "secretaria" | "pedagogica" | "professor";
 
 export type SessionUser = {
-  id: string;
+  id: string ;
   nome: string;
-  email: string;
+  email: string ;
   senha: string;
   cargo: UserRole;
   disciplina?: string;
@@ -30,16 +30,16 @@ export const DEFAULT_USERS: SessionUser[] = [
     nome: "Teresa Cabral",
     email: "secretaria@escola.ao",
     senha: "secretaria123",
-    cargo: "secretario",
+    cargo: "secretaria",
     ativo: true,
     criadoPor: "admin",
   },
   {
-    id: "dp-01",
+    id: "pedagogica-01",
     nome: "João Mendes",
-    email: "dp@escola.ao",
-    senha: "dp123",
-    cargo: "dp",
+    email: "pedagogica@escola.ao",
+    senha: "pedagogica123",
+    cargo: "pedagogica",
     ativo: true,
     criadoPor: "admin",
   },
@@ -59,8 +59,8 @@ export const DEFAULT_USERS: SessionUser[] = [
 export function getRoleLabel(cargo: UserRole): string {
   const labels: Record<UserRole, string> = {
     admin: "Administração / Pedagógica",
-    secretario: "Secretário(a)",
-    dp: "Direção Pedagógica",
+    secretaria: "Secretário(a)",
+    pedagogica: "Direção Pedagógica",
     professor: "Professor(a)",
   };
 
@@ -126,7 +126,7 @@ export function canAccessPath(cargo: UserRole, path: string): boolean {
       "/alunos",
       "/turmas",
       "/classes",
-      "/salas",
+      "/sala",
       "/disciplinas",
       "/professores",
       "/inscricao",
@@ -137,28 +137,21 @@ export function canAccessPath(cargo: UserRole, path: string): boolean {
       "/cadastro",
       "/usuarios",
     ],
-    secretario: [
+    secretaria: [
       "/dashboard",
-      "/alunos",
       "/turmas",
       "/classes",
-      "/salas",
-      "/disciplinas",
+      "/sala",
       "/inscricao",
       "/matricula",
       "/documentos",
       "/estatisticas",
     ],
-    dp: [
+    pedagogica: [
       "/dashboard",
       "/alunos",
-      "/turmas",
-      "/classes",
-      "/salas",
       "/disciplinas",
       "/professores",
-      "/inscricao",
-      "/matricula",
       "/documentos",
       "/estatisticas",
       "/cadastro",
@@ -176,6 +169,7 @@ export function getVisibleRoutes(cargo: UserRole) {
       { to: "/dashboard", label: "Dashboard" },
       { to: "/alunos", label: "Alunos" },
       { to: "/turmas", label: "Turmas" },
+      { to: "/sala", label: "Salas" },
       { to: "/disciplinas", label: "Disciplinas" },
       { to: "/professores", label: "Professores" },
       { to: "/inscricao", label: "Inscrições" },
@@ -185,17 +179,16 @@ export function getVisibleRoutes(cargo: UserRole) {
       { to: "/estatisticas", label: "Estatísticas" },
       { to: "/usuarios", label: "Usuários" },
     ],
-    secretario: [
+    secretaria: [
       { to: "/dashboard", label: "Dashboard" },
-      { to: "/alunos", label: "Alunos" },
       { to: "/turmas", label: "Turmas" },
-      { to: "/disciplinas", label: "Disciplinas" },
+      { to: "/sala", label: "Salas" },
       { to: "/inscricao", label: "Inscrições" },
       { to: "/matricula", label: "Matrículas" },
       { to: "/documentos", label: "Documentos" },
       { to: "/estatisticas", label: "Estatísticas" },
     ],
-    dp: [
+    pedagogica: [
       { to: "/dashboard", label: "Dashboard" },
       { to: "/alunos", label: "Alunos" },
       { to: "/turmas", label: "Turmas" },
@@ -238,7 +231,7 @@ export function authorizeUserRegistration(identifier: string, accessKey: string)
     (entry) =>
       (entry.email.toLowerCase() === normalizedIdentifier ||
         entry.nome.toLowerCase() === normalizedIdentifier) &&
-      (entry.cargo === "admin" || entry.cargo === "dp") &&
+      (entry.cargo === "admin" || entry.cargo === "pedagogica") &&
       entry.senha === accessKey &&
       entry.ativo,
   );

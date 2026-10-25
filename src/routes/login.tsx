@@ -58,8 +58,8 @@ function LoginPage() {
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {[
                 ["Professor(a)", "Registo de notas por turma, disciplina e classe."],
-                ["Secretário(a)", "Gestão de alunos, matrículas e documentos."],
-                ["DP", "Controlo de processos e acompanhamento pedagógico."],
+                ["A. Secretára", "Gestão de matrículas, confirmação, turmas/salas, declaração/certificados."],
+                ["A. Pedagógica", "Gestão de alunos, professores, disciplinas, pautas, horários."],
                 ["Admin", "Cadastro de utilizadores e gestão institucional."],
               ].map(([cargo, descricao]) => (
                 <div key={cargo} className="rounded-xl border border-line bg-surface/70 p-4">
@@ -118,7 +118,7 @@ function LoginPage() {
             <p className="font-medium text-foreground">Credenciais de demonstração</p>
             <p className="mt-2">Admin: admin@escola.ao / admin123</p>
             <p>Secretária: secretaria@escola.ao / secretaria123</p>
-            <p>DP: dp@escola.ao / dp123</p>
+            <p>A. Pedagógica: pedagogica@escola.ao / pedagogica123</p>
             <p>Professor: almeida@escola.ao / prof123</p>
           </div>
         </div>
