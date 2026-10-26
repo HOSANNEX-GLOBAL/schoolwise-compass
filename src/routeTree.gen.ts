@@ -17,10 +17,13 @@ import { Route as DisciplinasRouteImport } from './routes/disciplinas'
 import { Route as DocumentosRouteImport } from './routes/documentos'
 import { Route as EstatisticasRouteImport } from './routes/estatisticas'
 import { Route as InscricaoRouteImport } from './routes/inscricao'
+import { Route as Inscricao_publicaRouteImport } from './routes/inscricao_publica'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as MatriculaRouteImport } from './routes/matricula'
 import { Route as NotasRouteImport } from './routes/notas'
+import { Route as PeriodosRouteImport } from './routes/periodos'
 import { Route as ProfessoresRouteImport } from './routes/professores'
+import { Route as SalasRouteImport } from './routes/salas'
 import { Route as TurmasRouteImport } from './routes/turmas'
 import { Route as UsuariosRouteImport } from './routes/usuarios'
 
@@ -64,6 +67,11 @@ const InscricaoRoute = InscricaoRouteImport.update({
   path: '/inscricao',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Inscricao_publicaRoute = Inscricao_publicaRouteImport.update({
+  id: '/inscricao_publica',
+  path: '/inscricao_publica',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -79,9 +87,19 @@ const NotasRoute = NotasRouteImport.update({
   path: '/notas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PeriodosRoute = PeriodosRouteImport.update({
+  id: '/periodos',
+  path: '/periodos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfessoresRoute = ProfessoresRouteImport.update({
   id: '/professores',
   path: '/professores',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalasRoute = SalasRouteImport.update({
+  id: '/salas',
+  path: '/salas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TurmasRoute = TurmasRouteImport.update({
@@ -104,10 +122,13 @@ export interface FileRoutesByFullPath {
   '/documentos': typeof DocumentosRoute
   '/estatisticas': typeof EstatisticasRoute
   '/inscricao': typeof InscricaoRoute
+  '/inscricao_publica': typeof Inscricao_publicaRoute
   '/login': typeof LoginRoute
   '/matricula': typeof MatriculaRoute
   '/notas': typeof NotasRoute
+  '/periodos': typeof PeriodosRoute
   '/professores': typeof ProfessoresRoute
+  '/salas': typeof SalasRoute
   '/turmas': typeof TurmasRoute
   '/usuarios': typeof UsuariosRoute
 }
@@ -120,10 +141,13 @@ export interface FileRoutesByTo {
   '/documentos': typeof DocumentosRoute
   '/estatisticas': typeof EstatisticasRoute
   '/inscricao': typeof InscricaoRoute
+  '/inscricao_publica': typeof Inscricao_publicaRoute
   '/login': typeof LoginRoute
   '/matricula': typeof MatriculaRoute
   '/notas': typeof NotasRoute
+  '/periodos': typeof PeriodosRoute
   '/professores': typeof ProfessoresRoute
+  '/salas': typeof SalasRoute
   '/turmas': typeof TurmasRoute
   '/usuarios': typeof UsuariosRoute
 }
@@ -137,10 +161,13 @@ export interface FileRoutesById {
   '/documentos': typeof DocumentosRoute
   '/estatisticas': typeof EstatisticasRoute
   '/inscricao': typeof InscricaoRoute
+  '/inscricao_publica': typeof Inscricao_publicaRoute
   '/login': typeof LoginRoute
   '/matricula': typeof MatriculaRoute
   '/notas': typeof NotasRoute
+  '/periodos': typeof PeriodosRoute
   '/professores': typeof ProfessoresRoute
+  '/salas': typeof SalasRoute
   '/turmas': typeof TurmasRoute
   '/usuarios': typeof UsuariosRoute
 }
@@ -155,10 +182,13 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/estatisticas'
     | '/inscricao'
+    | '/inscricao_publica'
     | '/login'
     | '/matricula'
     | '/notas'
+    | '/periodos'
     | '/professores'
+    | '/salas'
     | '/turmas'
     | '/usuarios'
   fileRoutesByTo: FileRoutesByTo
@@ -171,10 +201,13 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/estatisticas'
     | '/inscricao'
+    | '/inscricao_publica'
     | '/login'
     | '/matricula'
     | '/notas'
+    | '/periodos'
     | '/professores'
+    | '/salas'
     | '/turmas'
     | '/usuarios'
   id:
@@ -187,10 +220,13 @@ export interface FileRouteTypes {
     | '/documentos'
     | '/estatisticas'
     | '/inscricao'
+    | '/inscricao_publica'
     | '/login'
     | '/matricula'
     | '/notas'
+    | '/periodos'
     | '/professores'
+    | '/salas'
     | '/turmas'
     | '/usuarios'
   fileRoutesById: FileRoutesById
@@ -204,10 +240,13 @@ export interface RootRouteChildren {
   DocumentosRoute: typeof DocumentosRoute
   EstatisticasRoute: typeof EstatisticasRoute
   InscricaoRoute: typeof InscricaoRoute
+  Inscricao_publicaRoute: typeof Inscricao_publicaRoute
   LoginRoute: typeof LoginRoute
   MatriculaRoute: typeof MatriculaRoute
   NotasRoute: typeof NotasRoute
+  PeriodosRoute: typeof PeriodosRoute
   ProfessoresRoute: typeof ProfessoresRoute
+  SalasRoute: typeof SalasRoute
   TurmasRoute: typeof TurmasRoute
   UsuariosRoute: typeof UsuariosRoute
 }
@@ -270,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InscricaoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/inscricao_publica': {
+      id: '/inscricao_publica'
+      path: '/inscricao_publica'
+      fullPath: '/inscricao_publica'
+      preLoaderRoute: typeof Inscricao_publicaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -291,11 +337,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NotasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/periodos': {
+      id: '/periodos'
+      path: '/periodos'
+      fullPath: '/periodos'
+      preLoaderRoute: typeof PeriodosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/professores': {
       id: '/professores'
       path: '/professores'
       fullPath: '/professores'
       preLoaderRoute: typeof ProfessoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/salas': {
+      id: '/salas'
+      path: '/salas'
+      fullPath: '/salas'
+      preLoaderRoute: typeof SalasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/turmas': {
@@ -324,10 +384,13 @@ const rootRouteChildren: RootRouteChildren = {
   DocumentosRoute: DocumentosRoute,
   EstatisticasRoute: EstatisticasRoute,
   InscricaoRoute: InscricaoRoute,
+  Inscricao_publicaRoute: Inscricao_publicaRoute,
   LoginRoute: LoginRoute,
   MatriculaRoute: MatriculaRoute,
   NotasRoute: NotasRoute,
+  PeriodosRoute: PeriodosRoute,
   ProfessoresRoute: ProfessoresRoute,
+  SalasRoute: SalasRoute,
   TurmasRoute: TurmasRoute,
   UsuariosRoute: UsuariosRoute,
 }

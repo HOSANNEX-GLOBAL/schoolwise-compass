@@ -7,7 +7,7 @@ import { SchoolLevel } from "@/types/schoollevel.ds";
 import { getRegistrations, postRegistrations, putRegistrations, updateRegistrationStatus } from "@/api/registration";
 import { Registration, RegistrationForm, RegistrationStatus } from "@/types/registration.ds";
 
-type Inscricao = {
+export type Inscricao = {
   id: number | null;
   nome: string;
   bi: string;
@@ -19,7 +19,7 @@ type Inscricao = {
   estado: "Pendente" | "Aprovada" | "Convertida";
 };
 
-const inscricaoVazia = {
+export const inscricaoVazia = {
   id: 0,
   nome: "",
   bi: "",
@@ -55,7 +55,6 @@ function InscricaoPage() {
       },
     });
 
-
     const atualizarStatusInscricao = async (inscricao: Registration, status: number) => {
       
         if(inscricao.id){
@@ -75,7 +74,7 @@ function InscricaoPage() {
         }
     }
 
-  async function adicionarInscricao(event: FormEvent<HTMLFormElement>) {
+   async function adicionarAtualizarInscricao(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const inscricao: RegistrationForm = {
@@ -245,6 +244,11 @@ function InscricaoPage() {
         valor={novaInscricao}
         onChange={setNovaInscricao}
         onEdit={() => setEdicaoAberta(true)}
+        onCancel={()=>{
+            setFormularioAberto(false)
+            setEdicaoAberta(false)
+            setNovaInscricao(inscricaoVazia)
+        }}
         onClose={() =>{
           if(edicaoAberta){
             setEdicaoAberta(false)
@@ -252,25 +256,27 @@ function InscricaoPage() {
           }
           setFormularioAberto(false)
         } }
-        onSubmit={adicionarInscricao}
+        onSubmit={adicionarAtualizarInscricao}
       />
     </AppShell>
   );
 }
 
-function DialogInscricao({
+export function DialogInscricao({
   aberto,
   valor,
   onChange,
   onEdit,
   onClose,
   onSubmit,
+  onCancel
 }: {
   aberto: boolean;
   valor: typeof inscricaoVazia;
   onChange: (valor: typeof inscricaoVazia) => void;
   onEdit: () => void;
   onClose: () => void;
+  onCancel: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   
@@ -352,7 +358,7 @@ function DialogInscricao({
           <div className="flex justify-end gap-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={onCancel}
               className="text-sm px-3 py-2 rounded-md ring-1 ring-white/10"
             >
               Cancelar
@@ -369,3 +375,4 @@ function DialogInscricao({
     </div>
   );
 }
+

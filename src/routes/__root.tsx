@@ -133,7 +133,7 @@ function RootComponent() {
   const currentUser = readSession();
 
   useEffect(() => {
-    const publicRoutes = ["/", "/login", "/cadastro"];
+    const publicRoutes = ["/", "/login", "/cadastro","/inscricao_publica"];
 
     if (publicRoutes.includes(location.pathname)) {
       return;

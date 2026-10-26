@@ -44,6 +44,10 @@ function DashboardPage() {
           <p className="mt-1 text-xs text-mut">Distribuídos por {turmas.length} turmas</p>
         </article>
         <article className="glass clip p-5">
+          <p className="text-[11px] uppercase tracking-wider text-mut">Alunos Inscritos</p>
+          <p className="mt-2 text-3xl font-semibold">{totalAlunos}</p>
+        </article>
+        <article className="glass clip p-5">
           <p className="text-[11px] uppercase tracking-wider text-mut">Turmas ativas</p>
           <p className="mt-2 text-3xl font-semibold">{turmas.length}</p>
           <p className="mt-1 text-xs text-mut">Ensino geral</p>
@@ -57,6 +61,18 @@ function DashboardPage() {
           <p className="text-[11px] uppercase tracking-wider text-mut">Aprovação estimada</p>
           <p className="mt-2 text-3xl font-semibold text-pass">{aprovacao}%</p>
           <p className="mt-1 text-xs text-mut">Média geral: {mediaGeral.toFixed(1)}</p>
+        </article>
+        <article className="glass clip p-5">
+          <p className="text-[11px] uppercase tracking-wider text-mut">Salas</p>
+          <p className="mt-2 text-3xl font-semibold text-warn">{aprovacao}</p>
+        </article>
+        <article className="glass clip p-5">
+          <p className="text-[11px] uppercase tracking-wider text-mut">Períodos</p>
+          <p className="mt-2 text-3xl font-semibold text-warn">{3}</p>
+        </article>
+        <article className="glass clip p-5">
+          <p className="text-[11px] uppercase tracking-wider text-mut">Professores</p>
+          <p className="mt-2 text-3xl font-semibold text-warn">{13}</p>
         </article>
       </section>
 

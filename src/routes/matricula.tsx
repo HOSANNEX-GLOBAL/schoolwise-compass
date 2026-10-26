@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Enrollment } from "@/types/enrollment.ds";
 import { getEnrollments } from "@/api/enrollment";
 
-const MATRICULAS_STORAGE_KEY = "schoolwise:matriculas:v1";
 
 type Matricula = {
   id: number | string;
@@ -133,20 +132,13 @@ function MatriculaPage() {
                   <th className="text-left font-medium py-2.5 px-5">Processo</th>
                   <th className="text-left font-medium py-2.5 px-4">Aluno</th>
                   <th className="text-left font-medium py-2.5">Turma</th>
+                  <th className="text-left font-medium py-2.5">Classe</th>
                   <th className="text-left font-medium py-2.5 px-5">Data</th>
                   <th className="text-left font-medium py-2.5 px-2">Estado</th>
                 </tr>
               </thead>
               <tbody className="text-mut">
                 {matriculas.map((matricula) => (
-
-                  // <td>{matricula.studentNumber}</td>
-                  // <td>{matricula.studentName}</td>
-                  // <td>{matricula.schoolLevelName}</td>
-                  // <td>{matricula.classroomName}</td>
-                  // <td>{matricula.academicYearName}</td>
-                  // <td>{matricula.status}</td>
-
 
                   <tr
                     key={matricula.id}
@@ -155,6 +147,7 @@ function MatriculaPage() {
                     <td className="py-2.5 px-3 text-brand">{matricula.studentNumber}</td>
                     <td className="py-2.5 text-foreground">{matricula.studentName}</td>
                     <td className="py-2.5">{matricula.classroomName}</td>
+                    <td className="py-2.5">{matricula.schoolLevelName}</td>
                     <td className="py-2.5">{matricula.academicYearName}</td>
                     <td className="py-2.5 text-pass">{matricula.status}</td>
                   </tr>
